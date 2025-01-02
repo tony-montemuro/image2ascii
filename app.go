@@ -1,7 +1,16 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"log"
+
+	"github.com/tony-montemuro/image2ascii/fileio"
+)
 
 func main() {
-	fmt.Println("image2ascii!")
+	image, err := fileio.ReadImageFromFile()
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(image.Bounds())
 }
