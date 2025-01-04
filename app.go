@@ -4,13 +4,67 @@ import (
 	"image"
 	"image/color"
 	"log"
+	"math"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/tony-montemuro/image2ascii/fileio"
 )
 
-func coordinateToPixelNumber(x int, y int) int {
+func getMinBrightness() float64 {
+	if len(os.Args) < 3 {
+		return 50.0
+	}
+
+	val, err := strconv.ParseFloat(os.Args[2], 64)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return val
+}
+
+func getLinearizedChannel(colorChannel uint8) float64 {
+	v := float64(colorChannel) / 255.0
+
+	if v <= 0.04045 {
+		return v / 12.92
+	} else {
+		return math.Pow((v+0.055)/1.055, 2.4)
+	}
+}
+
+func getLuminance(r float64, g float64, b float64) float64 {
+	return (0.2126 * r) + (0.7152 * g) + (0.0722 * b)
+}
+
+func getPercievedBrightness(luminance float64) float64 {
+	if luminance <= 0.008856 {
+		return luminance * 903.3
+	} else {
+		return math.Pow(luminance, 1.0/3.0)*116 - 16
+	}
+}
+
+func getPixelBrightness(pixel color.Color) float64 {
+	r, g, b, _ := pixel.RGBA()
+
+	// convert to 8-bit value
+	red := uint8(r >> 8)
+	green := uint8(g >> 8)
+	blue := uint8(b >> 8)
+
+	// liearize red, green, blue
+	lr, lg, lb := getLinearizedChannel(red), getLinearizedChannel(green), getLinearizedChannel(blue)
+
+	// calculate luminance
+	luminance := getLuminance(lr, lg, lb)
+
+	// return percieved brightness
+	return getPercievedBrightness(luminance)
+}
+
+func getPixelNumber(x int, y int) int {
 	if y <= 2 {
 		return 3*x + y
 	}
@@ -21,33 +75,18 @@ func generateAscii(img image.Image) []string {
 	const CHAR_WIDTH = 2
 	const CHAR_HEIGHT = 4
 	bounds := img.Bounds()
+	minBrightness := getMinBrightness()
 
 	pixelsToAscii := func(startX int, startY int) rune {
-		getUpdatedOffset := func(pixel color.Color, offset uint8, pixelNumber int) uint8 {
-			r, g, b, a := pixel.RGBA()
-			newOffset := offset
-
-			// convert to 8-bit
-			red := uint16(r >> 8)
-			green := uint16(g >> 8)
-			blue := uint16(b >> 8)
-			alpha := uint16(a >> 8)
-			score := red + green + blue + alpha
-
-			if score > 256*4/2 {
-				newOffset |= (1 << pixelNumber)
-			}
-			return newOffset
-		}
-
 		var offset uint8 = 0
 		for dy := 0; dy < int(CHAR_HEIGHT); dy++ {
 			for dx := 0; dx < int(CHAR_WIDTH); dx++ {
 				x, y := startX+dx, startY+dy
 				if x <= bounds.Max.X && y <= bounds.Max.Y {
-					pixel := img.At(x, y)
-					pixelNumber := coordinateToPixelNumber(dx, dy)
-					offset = getUpdatedOffset(pixel, offset, pixelNumber)
+					brightness := getPixelBrightness(img.At(x, y))
+					if brightness > minBrightness {
+						offset |= (1 << getPixelNumber(dx, dy))
+					}
 				}
 			}
 		}
