@@ -2,7 +2,6 @@ package fileio
 
 import (
 	"errors"
-	"fmt"
 	"image"
 	_ "image/jpeg"
 	_ "image/png"
@@ -21,11 +20,10 @@ func ReadImageFromFile() (image.Image, error) {
 	}
 	defer file.Close()
 
-	image, format, err := image.Decode(file)
+	image, _, err := image.Decode(file)
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(format)
 
 	return image, nil
 }

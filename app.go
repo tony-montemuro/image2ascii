@@ -2,51 +2,70 @@ package main
 
 import (
 	"image"
+	"image/color"
 	"log"
-	"math"
 	"os"
+	"strings"
 
 	"github.com/tony-montemuro/image2ascii/fileio"
 )
 
-func process(img image.Image, file *os.File) error {
+func coordinateToPixelNumber(x int, y int) int {
+	if y <= 2 {
+		return 3*x + y
+	}
+	return 2*y + x
+}
+
+func generateAscii(img image.Image) []string {
+	const CHAR_WIDTH = 2
+	const CHAR_HEIGHT = 4
 	bounds := img.Bounds()
-	for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
-		line := ""
-		for x := bounds.Min.X; x < bounds.Max.X; x++ {
-			pixel := img.At(x, y)
+
+	pixelsToAscii := func(startX int, startY int) rune {
+		getUpdatedOffset := func(pixel color.Color, offset uint8, pixelNumber int) uint8 {
 			r, g, b, a := pixel.RGBA()
+			newOffset := offset
 
 			// convert to 8-bit
 			red := uint16(r >> 8)
 			green := uint16(g >> 8)
 			blue := uint16(b >> 8)
 			alpha := uint16(a >> 8)
-
-			var level uint16 = math.MaxUint16
-			levels := []string{" ", "░", "▒", "▓", "█"}
-			var levelWidth uint16 = 205
 			score := red + green + blue + alpha
 
-			var i uint16 = 0
-			for ; i < uint16(len(levels)) && level == math.MaxUint16; i++ {
-				begin := i * levelWidth
-				end := (i + 1) * levelWidth
-				if score >= begin && score < end {
-					level = i
+			if score > 256*4/2 {
+				newOffset |= (1 << pixelNumber)
+			}
+			return newOffset
+		}
+
+		var offset uint8 = 0
+		for dy := 0; dy < int(CHAR_HEIGHT); dy++ {
+			for dx := 0; dx < int(CHAR_WIDTH); dx++ {
+				x, y := startX+dx, startY+dy
+				if x <= bounds.Max.X && y <= bounds.Max.Y {
+					pixel := img.At(x, y)
+					pixelNumber := coordinateToPixelNumber(dx, dy)
+					offset = getUpdatedOffset(pixel, offset, pixelNumber)
 				}
 			}
+		}
 
-			line += levels[level]
-		}
-		line += "\n"
-		_, err := file.WriteString(line)
-		if err != nil {
-			return err
-		}
+		return rune(0x2800 + int(offset))
 	}
 
-	return nil
+	ascii := []string{}
+	for y := bounds.Min.Y; y < bounds.Max.Y; y += int(CHAR_HEIGHT) {
+		var builder strings.Builder
+		for x := bounds.Min.X; x < bounds.Max.X; x += int(CHAR_WIDTH) {
+			builder.WriteRune(pixelsToAscii(x, y))
+		}
+		builder.WriteRune('\n')
+		ascii = append(ascii, builder.String())
+	}
+
+	return ascii
 }
 
 func main() {
@@ -55,13 +74,14 @@ func main() {
 		log.Fatal(err)
 	}
 
+	ascii := generateAscii(image)
 	file, err := os.Create("output.txt")
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer file.Close()
 
-	err = process(image, file)
-	if err != nil {
-		log.Fatal(err)
+	for _, row := range ascii {
+		file.WriteString(row)
 	}
 }
