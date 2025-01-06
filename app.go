@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"image"
 	"image/color"
 	"log"
@@ -16,6 +17,8 @@ const (
 	CHAR_WIDTH  = 2
 	CHAR_HEIGHT = 4
 )
+
+type BrightnessComparisonFunc func(a, target float64) bool
 
 func getMinBrightness() float64 {
 	if len(os.Args) < 3 {
@@ -44,6 +47,14 @@ func getWidthAndHeight(bounds image.Rectangle) (int, int) {
 	}
 
 	return int(width), int(height)
+}
+
+func isLightInverted() bool {
+	if len(os.Args) < 6 {
+		return false
+	}
+
+	return os.Args[5] == "1"
 }
 
 func getLinearizedChannel(colorChannel uint8) float64 {
@@ -75,14 +86,24 @@ func getPixelNumber(x int, y int) int {
 	return 2*y + x
 }
 
+func getBrightnessComparisonFunc(isInverted bool) BrightnessComparisonFunc {
+	if isInverted {
+		return func(brightness, minBrightness float64) bool { return brightness <= minBrightness }
+	}
+	return func(brightness, minBrightness float64) bool { return brightness >= minBrightness }
+}
+
 func generateAscii(img image.Image) []string {
 	ascii := []string{}
 	bounds := img.Bounds()
 	minBrightness := getMinBrightness()
 	userWidth, userHeight := getWidthAndHeight(bounds)
+	fmt.Println(userWidth, userHeight)
 	pixelWidth, pixelHeight := CHAR_WIDTH*userWidth, CHAR_HEIGHT*userHeight
 	originalWidth, originalHeight := bounds.Max.X-bounds.Min.X, bounds.Max.Y-bounds.Min.Y
 	scaleX, scaleY := float64(pixelWidth)/float64(originalWidth), float64(pixelHeight)/float64(originalHeight)
+	isInverted := isLightInverted()
+	isPixelOn := getBrightnessComparisonFunc(isInverted)
 
 	pixelsToAscii := func(baseX, baseY int) rune {
 		transformedX, transformedY := baseX*CHAR_WIDTH, baseY*CHAR_HEIGHT
@@ -122,7 +143,7 @@ func generateAscii(img image.Image) []string {
 				brightness := (b1 + b2 + b3 + b4) / 4
 
 				// if brightness exceeds min brightness, render a pixel (update offset)
-				if brightness >= minBrightness {
+				if isPixelOn(brightness, minBrightness) {
 					offset |= (1 << getPixelNumber(dx, dy))
 				}
 			}
