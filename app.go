@@ -250,7 +250,12 @@ func getAscii(c *gin.Context) {
 
 func main() {
 	router := gin.Default()
-	router.GET("/", getAscii)
+
+	// web client
+	router.StaticFS("/static", gin.Dir("static", true))
+
+	// api
+	router.GET("/api", getAscii)
 
 	router.Run("localhost:8080")
 }
