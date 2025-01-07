@@ -16,51 +16,74 @@ import (
 )
 
 const (
-	CHAR_WIDTH     = 2
-	CHAR_HEIGHT    = 4
-	MAX_BRIGHTNESS = 100.0
+	CHAR_WIDTH         = 2
+	CHAR_HEIGHT        = 4
+	MIN_BRIGHTNESS     = 0.0
+	MAX_BRIGHTNESS     = 100.0
+	DEFAULT_BRIGHTNESS = 50.0
+	DEFAULT_INVERTED   = false
+	MIN_LENGTH         = 1
+	MAX_LENGTH         = 1000
 )
 
 type BrightnessComparisonFunc func(a, target float64) bool
 
 func getMinBrightness(c *gin.Context) (float64, error) {
 	brightnessVal, ok := c.GetQuery("brightness")
+	errMsg := fmt.Sprintf("invalid brightness: must be a number between %f & %f", MIN_BRIGHTNESS, MAX_BRIGHTNESS)
 
 	if ok {
 		brightness, err := strconv.ParseFloat(brightnessVal, 64)
 		if err != nil {
-			return -1.0, fmt.Errorf("invalid brightness: must be a number")
+			return 0, errors.New(errMsg)
 		}
+		if brightness < MIN_BRIGHTNESS || brightness > MAX_BRIGHTNESS {
+			return 0, errors.New(errMsg)
+		}
+
 		return MAX_BRIGHTNESS - brightness, nil
 	}
 
-	return 50.0, nil
+	return DEFAULT_BRIGHTNESS, nil
 }
 
 func getWidthAndHeight(bounds image.Rectangle, c *gin.Context) (int, int, error) {
 	widthVal, okWidth := c.GetQuery("width")
 	heightVal, okHeight := c.GetQuery("height")
+	minLength, maxLength := 1, 1000
+	widthErrMsg := fmt.Sprintf("invalid width: must be a number between %d and %d", minLength, maxLength)
+	heightErrMsg := fmt.Sprintf("invalid height: must be a number between %d and %d", minLength, maxLength)
 	errs := []string{}
-
 	width, height := 0, 0
+
+	// width
 	if !okWidth {
 		width = int(math.Ceil(float64(bounds.Max.X) / CHAR_WIDTH))
 	} else {
 		w, err := strconv.ParseInt(widthVal, 10, 32)
 		if err != nil {
-			errs = append(errs, "invalid width: must be a number")
+			errs = append(errs, widthErrMsg)
+		} else {
+			width = int(w)
+			if width < minLength || width > maxLength {
+				errs = append(errs, widthErrMsg)
+			}
 		}
-		width = int(w)
 	}
 
+	// height
 	if !okHeight {
 		height = int(math.Ceil(float64(bounds.Max.Y) / CHAR_HEIGHT))
 	} else {
 		h, err := strconv.ParseInt(heightVal, 10, 32)
 		if err != nil {
-			errs = append(errs, "invalid height: must be a number")
+			errs = append(errs, heightErrMsg)
+		} else {
+			height = int(h)
+			if height < minLength || height > maxLength {
+				errs = append(errs, heightErrMsg)
+			}
 		}
-		height = int(h)
 	}
 
 	var err error
@@ -76,12 +99,12 @@ func isLightInverted(c *gin.Context) (bool, error) {
 	if ok {
 		isInverted, err := strconv.ParseBool(invertedVal)
 		if err != nil {
-			return false, fmt.Errorf("invalid inverted: must be either 'true' or 'false'")
+			return DEFAULT_INVERTED, fmt.Errorf("invalid inverted: must be either 'true' or 'false'")
 		}
 		return isInverted, nil
 	}
 
-	return false, nil
+	return DEFAULT_INVERTED, nil
 }
 
 func getLinearizedChannel(colorChannel uint8) float64 {
@@ -141,7 +164,6 @@ func generateAscii(img image.Image, c *gin.Context) ([]string, int, error) {
 	}
 	isPixelOn := getBrightnessComparisonFunc(isInverted)
 
-	fmt.Println(minBrightness, userWidth, userHeight, isInverted)
 	pixelWidth, pixelHeight := CHAR_WIDTH*userWidth, CHAR_HEIGHT*userHeight
 	originalWidth, originalHeight := bounds.Max.X-bounds.Min.X, bounds.Max.Y-bounds.Min.Y
 	scaleX, scaleY := float64(pixelWidth)/float64(originalWidth), float64(pixelHeight)/float64(originalHeight)
@@ -204,41 +226,22 @@ func generateAscii(img image.Image, c *gin.Context) ([]string, int, error) {
 	return ascii, http.StatusOK, nil
 }
 
-// func main() {
-// 	image, err := fileio.ReadImageFromFile()
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
-
-// 	ascii := generateAscii(image)
-// 	file, err := os.Create("output.txt")
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
-// 	defer file.Close()
-
-// 	for _, row := range ascii {
-// 		file.WriteString(row)
-// 	}
-// }
-
 func getAscii(c *gin.Context) {
 	file, _, err := c.Request.FormFile("image")
 	if err != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "No image provided"})
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "no image provided"})
 		return
 	}
 	defer file.Close()
 
-	image, imageType, err := image.Decode(file)
+	image, _, err := image.Decode(file)
 	if err != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("Bad image format: %s", imageType)})
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "bad image format: must be either png or jpg/jpeg"})
 		return
 	}
 
 	ascii, code, err := generateAscii(image, c)
 	if code != http.StatusOK || err != nil {
-		fmt.Println(code, err)
 		c.IndentedJSON(code, gin.H{"error": err.Error()})
 	} else {
 		c.IndentedJSON(http.StatusOK, ascii)
