@@ -5,62 +5,77 @@
     <link rel="stylesheet" href="styles.css"/>
     <script src="script.js"></script>
   </head>
-  <body>
-    <div>
-      <h1>Image2Ascii</h1>
-      <form>
-        <div>
-          <label for="image">Upload an image</label>
+  <body class="w-full h-screen flex justify-center items-center">
+    <div class="flex justify-center flex-col gap-2">
+      <h1 class="text-center">Image2Ascii</h1>
+      <form class="flex flex-col gap-2">
+        <div class="flex justify-center">
+          <label 
+            for="image" 
+            class="border cursor-pointer btn p-1 rounded"
+          >
+            Upload an image
+          </label>
           <input 
             type="file"
             id="image"
             name="image"
             accept="image/png, image/jpg, image/jpeg"
-          />  
-        </div>
-        <div>
-          <div>
-            <label for="width">Width</label>
-            <input
-              type="number"
-              id="width"
-              name="width"
-              min="1"
-              max="1000"
-              step="1"
-            />
-          </div>
-          <div>
-            <label for="height">Height</label>
-            <input
-              type="number"
-              id="height"
-              name="height"
-              min="1"
-              max="1000"
-              step="1"
-            />
-          </div>
-        </div>
-        <div>
-          <label for="brightness">Brightness</label>
-          <input
-            type="range"
-            id="brightness"
-            name="brightness"
-            min="0"
-            max="100"
+            class="sr-only w-0 h-0 absolute"
           />
         </div>
-        <div>
-          <label for="invert">Invert</label>
-          <input
-            type="checkbox"
-            id="invert"
-            name="invert"
-          />
+        <div id="options" class="opacity-0 flex flex-col gap-2">
+          <div class="flex gap-2">
+            <div class="flex gap-1 items-center">
+              <label for="width">Width</label>
+              <input
+                type="number"
+                id="width"
+                name="width"
+                min="1"
+                max="1000"
+                step="1"
+                class="outline-none border rounded p-1"
+              />
+            </div>
+            <div class="flex gap-1 items-center">
+              <label for="height">Height</label>
+              <input
+                type="number"
+                id="height"
+                name="height"
+                min="1"
+                max="1000"
+                step="1"
+                class="outline-none border rounded p-1"
+              />
+            </div>
+          </div>
+          <div class="flex items-center gap-1">
+            <label for="brightness">Brightness</label>
+            <input
+              type="range"
+              id="brightness"
+              name="brightness"
+              min="0"
+              max="100"
+            />
+          </div>
+          <div class="flex items-center gap-1">
+            <label for="invert">Invert</label>
+            <input
+              type="checkbox"
+              id="invert"
+              name="invert"
+            />
+          </div>
+          <button
+            class="w-fit p-2 border rounded"
+            type="submit"
+          >
+            Submit
+          </button>
         </div>
-        <button type="submit">Submit</button>
       </form>
     </div>
   </body>
