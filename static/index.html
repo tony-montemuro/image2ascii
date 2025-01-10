@@ -25,7 +25,24 @@
           />
         </div>
         <div id="options" class="opacity-0 flex flex-col gap-2">
+          <strong>Size</strong>
           <div class="flex gap-2">
+            <button id="twitch" type="button" class="py-2 px-4 bg-twitch border rounded-full">
+              <img src="assets/twitch.png" alt="Twitch" class="w-8 h-auto" />
+            </button>
+            <button id="discord" type="button" class="py-2 px-4 bg-discord border rounded-full">
+              <img src="assets/discord.png" alt="Discord" class="w-8 h-auto" />
+            </button>
+          </div>
+          <div>
+            <label for="toggle-custom-size">Custom Size</label>
+            <input
+              id="toggle-custom-size"
+              name="toggle-custom-size"
+              type="checkbox"
+            />
+          </div>
+          <div id="custom-size" class="flex gap-2 sr-only w-0 h-0 absolute">
             <div class="flex gap-1 items-center">
               <label for="width">Width</label>
               <input

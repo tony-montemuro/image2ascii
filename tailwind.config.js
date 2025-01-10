@@ -2,7 +2,16 @@
 module.exports = {
   content: ["./static/**/*.{html,js}"],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        twitch: {
+          DEFAULT: '#9146FF'
+        },
+        discord: {
+          DEFAULT: '#5865F2'
+        }
+      }
+    },
   },
   plugins: [],
 }
