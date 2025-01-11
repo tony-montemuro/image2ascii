@@ -3,11 +3,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const imageInput = document.getElementById('image');
     const imageOptions = document.getElementById('options');
     const customSize = document.getElementById('custom-size');
-    const toggleCustomSize = document.getElementById('toggle-custom-size');
     const twitchBtn = document.getElementById('twitch');
     const discordBtn = document.getElementById('discord');
     const widthInput = document.getElementById('width');
     const heightInput = document.getElementById('height');
+    const brightness = document.getElementById('brightness');
+    const brightnessValue = document.getElementById('brightness-value');
+    const sizeRadios = document.getElementsByName('size');
 
     /* ===== VARIABLES ===== */
     const size = {
@@ -18,15 +20,29 @@ document.addEventListener('DOMContentLoaded', function() {
         discord: {
             width: 33,
             height: undefined
+        },
+        small: {
+            width: 20,
+            height: undefined
+        },
+        medium: {
+            width: 50,
+            height: undefined
+        },
+        large: {
+            width: 100,
+            height: undefined
         }
     };
 
     /* ===== FUNCTIONS ===== */
+    function getHeight(imageWidth, imageHeight, type) {
+        return Math.round((size[type].width * imageHeight) / imageWidth / 2);
+    }
+
     function checkImage(image) {
         const imageWidth = image.width, imageHeight = image.height;
-        size.twitch.height = Math.round((size.twitch.width * imageHeight) / imageWidth / 2);
-        size.discord.height = Math.round((size.discord.width * imageHeight) / imageWidth / 2);
-
+        Object.keys(size).forEach(type => size[type].height = getHeight(imageWidth, imageHeight, type));
         imageOptions.classList.remove('opacity-0');
     };
 
@@ -61,21 +77,23 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    toggleCustomSize.addEventListener('click', event => {
-        const checked = event.target.checked;
-        const hiddenClasses = ['sr-only', 'w-0', 'h-0', 'absolute'];
-
-        if (checked) {
-            hiddenClasses.forEach(hiddenClass => {
-                customSize.classList.remove(hiddenClass);
-            });
-        } else {
-            hiddenClasses.forEach(hiddenClass => {
-                customSize.classList.add(hiddenClass);
-            });
-        }
+    brightness.addEventListener('input', event => {
+        brightnessValue.value = event.target.value;
+    });
+    brightnessValue.addEventListener('change', event => {
+        brightness.value = event.target.value;
     });
 
-    twitchBtn.addEventListener('click', () => updateSizeInputs('twitch'));
-    discordBtn.addEventListener('click', () => updateSizeInputs('discord'));
+    sizeRadios.forEach(radio => {
+        radio.addEventListener('click', event => {
+            const type = event.target.value;
+
+            if (type === "custom") {
+                customSize.classList.remove('sr-only', 'w-0', 'h-0', 'absolute');
+            } else {
+                customSize.classList.add('sr-only', 'w-0', 'h-0', 'absolute');
+                updateSizeInputs(type);
+            }
+        });
+    });
 });
