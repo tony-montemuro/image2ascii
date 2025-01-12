@@ -9,6 +9,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const brightnessValue = document.getElementById('brightness-value');
     const uploadBtn = document.getElementById('upload');
     const error = document.getElementById('error');
+    const imagePlaceholder = document.getElementById('img-placeholder');
+    const thumbnailWrapper = document.getElementById('thumbnail-wrapper');
+    const thumbnail = document.getElementById('thumbnail');
+    const thumbnailName = document.getElementById('thumbnail-name');
     const sizeRadios = document.getElementsByName('size');
 
     /* ===== VARIABLES ===== */
@@ -36,14 +40,37 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     /* ===== FUNCTIONS ===== */
-    function addErrorMessage(message) {
-        error.textContent = message;
-        error.classList.remove('sr-only');
+    function show(element) {
+        element.classList.remove('sr-only');
     }
 
-    function removeErrorMessage() {
+    function hide(element) {
+        element.classList.add('sr-only');
+    }
+
+    function addErrorMessage(message) {
+        thumbnail.src = '';
+        thumbnail.alt = '';
+        thumbnailName.textContent = '';
+        hide(thumbnailWrapper);
+        show(imagePlaceholder);
+
+        imageInput.value = '';
+        hide(imageOptions);
+        show(error);
+        error.textContent = message;
+    };
+
+    function displayOptions(image) {
+        thumbnail.src = image.src;
+        thumbnail.alt = 'Your image';
+        thumbnailName.textContent = image.name;
+        show(thumbnailWrapper);
+        hide(imagePlaceholder);
+
+        show(imageOptions);
+        hide(error);
         error.textContent = '';
-        error.classList.add('sr-only');
     };
 
     function getHeight(imageWidth, imageHeight, type) {
@@ -53,11 +80,10 @@ document.addEventListener('DOMContentLoaded', function() {
     function checkImage(image) {
         const imageWidth = image.width, imageHeight = image.height;
         Object.keys(size).forEach(type => size[type].height = getHeight(imageWidth, imageHeight, type));
-        imageOptions.classList.remove('sr-only');
-        removeErrorMessage();
+        displayOptions(image);
     };
 
-    function handleNewImage(input, files) {
+    function handleNewImage(files) {
         const img = files[0];
         const validTypes = ['image/jpeg', 'image/png'];
 
@@ -65,11 +91,10 @@ document.addEventListener('DOMContentLoaded', function() {
             const image = new Image();
             image.src = URL.createObjectURL(img);
             image.onload = function() {
+                image.setAttribute('name', img.name);
                 checkImage(this);
             }
         } else {
-            imageOptions.classList.add('sr-only');
-            input.value = '';
             addErrorMessage('File type not supported. Please upload a JPEG or PNG file.');
         }
     };
@@ -85,7 +110,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const files = input.files;
 
         if (files.length > 0) {
-            handleNewImage(input, files);
+            handleNewImage(files);
         }
     });
 
@@ -101,9 +126,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const type = event.target.value;
 
             if (type === "custom") {
-                customSize.classList.remove('sr-only');
+                show(customSize);
             } else {
-                customSize.classList.add('sr-only');
+                hide(customSize);
                 updateSizeInputs(type);
             }
         });

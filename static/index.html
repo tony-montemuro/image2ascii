@@ -14,15 +14,28 @@
         <div class="flex justify-center">
           <label
             for="image"
-            class="w-96 h-48 bg-gray-200 hover:bg-gray-200/80 border border-dashed border-gray-400 rounded-lg cursor-pointer btn p-1 rounded"
+            class="w-96 h-52 bg-gray-200 hover:bg-gray-200/80 border border-dashed border-gray-400 rounded-lg cursor-pointer btn p-1 rounded"
             id="upload"
           >
+
+            <!-- Left Side -->
             <div class="h-full flex items-center">
-              <div class="p-4">
-                <svg xmlns="http://www.w3.org/2000/svg" width="72px" height="72px" viewBox="0 0 24 24" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M18 20H4V6h9V4H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-9h-2v9zm-7.79-3.17l-1.96-2.36L5.5 18h11l-3.54-4.71zM20 4V1h-2v3h-3c.01.01 0 2 0 2h3v2.99c.01.01 2 0 2 0V6h3V4h-3z"/></svg>
+              <div class="flex flex-row items-center">
+                <div id="img-placeholder" class="p-4">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="5rem" height="5rem" viewBox="0 0 24 24" fill="#000000">
+                    <path d="M0 0h24v24H0V0z" fill="none"/>
+                    <path d="M18 20H4V6h9V4H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-9h-2v9zm-7.79-3.17l-1.96-2.36L5.5 18h11l-3.54-4.71zM20 4V1h-2v3h-3c.01.01 0 2 0 2h3v2.99c.01.01 2 0 2 0V6h3V4h-3z"/>
+                  </svg>
+                </div>
+                <div id="thumbnail-wrapper" class="sr-only w-40 h-full p-2 flex items-center flex flex-col gap-1">
+                  <img id="thumbnail" class="w-full h-40 object-contain grayscale-[75%]" src="" title="Your Image" />
+                  <span id="thumbnail-name" class="w-full text-xs text-center text-ellipsis overflow-hidden whitespace-nowrap"></span>
+                </div>
               </div>
+
+              <!-- Right Side -->
               <div class="w-full flex flex-col items-center justify-center">
-                <span class="text-lg">Drag & Drop Image</span>
+                <strong class="text-lg">Drag & Drop Image</strong>
                 <span>or</span>
                 <div class="w-28 h-12 bg-blue-500 hover:bg-blue-500/90 inline-flex items-center justify-center cursor-pointer rounded-full border-2 border-transparent">
                   <span class="text-white">Browse Files</span>
@@ -194,7 +207,6 @@
                 name="brightness"
                 min="0"
                 max="100"
-                class="accent-white bg-black"
               />
               <input
                 type="number"

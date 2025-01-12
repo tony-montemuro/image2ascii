@@ -10,6 +10,9 @@ module.exports = {
         discord: {
           DEFAULT: '#5865F2'
         }
+      },
+      grayscale: {
+        75: '75%'
       }
     },
   },
