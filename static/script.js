@@ -3,12 +3,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const imageInput = document.getElementById('image');
     const imageOptions = document.getElementById('options');
     const customSize = document.getElementById('custom-size');
-    const twitchBtn = document.getElementById('twitch');
-    const discordBtn = document.getElementById('discord');
     const widthInput = document.getElementById('width');
     const heightInput = document.getElementById('height');
     const brightness = document.getElementById('brightness');
     const brightnessValue = document.getElementById('brightness-value');
+    const uploadBtn = document.getElementById('upload');
+    const error = document.getElementById('error');
     const sizeRadios = document.getElementsByName('size');
 
     /* ===== VARIABLES ===== */
@@ -36,6 +36,16 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     /* ===== FUNCTIONS ===== */
+    function addErrorMessage(message) {
+        error.textContent = message;
+        error.classList.remove('sr-only');
+    }
+
+    function removeErrorMessage() {
+        error.textContent = '';
+        error.classList.add('sr-only');
+    };
+
     function getHeight(imageWidth, imageHeight, type) {
         return Math.round((size[type].width * imageHeight) / imageWidth / 2);
     }
@@ -43,7 +53,8 @@ document.addEventListener('DOMContentLoaded', function() {
     function checkImage(image) {
         const imageWidth = image.width, imageHeight = image.height;
         Object.keys(size).forEach(type => size[type].height = getHeight(imageWidth, imageHeight, type));
-        imageOptions.classList.remove('opacity-0');
+        imageOptions.classList.remove('sr-only');
+        removeErrorMessage();
     };
 
     function handleNewImage(input, files) {
@@ -57,8 +68,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 checkImage(this);
             }
         } else {
-            imageOptions.classList.add('opacity-0');
+            imageOptions.classList.add('sr-only');
             input.value = '';
+            addErrorMessage('File type not supported. Please upload a JPEG or PNG file.');
         }
     };
 
@@ -89,11 +101,24 @@ document.addEventListener('DOMContentLoaded', function() {
             const type = event.target.value;
 
             if (type === "custom") {
-                customSize.classList.remove('sr-only', 'w-0', 'h-0', 'absolute');
+                customSize.classList.remove('sr-only');
             } else {
-                customSize.classList.add('sr-only', 'w-0', 'h-0', 'absolute');
+                customSize.classList.add('sr-only');
                 updateSizeInputs(type);
             }
         });
     });
+
+    uploadBtn.addEventListener('drop', event => {
+        event.preventDefault();
+        
+        if (event.dataTransfer.files.length === 1) {
+            imageInput.files = event.dataTransfer.files;
+            const changeEvent = new Event('change');
+            imageInput.dispatchEvent(changeEvent);
+        } else {
+            addErrorMessage('You can only upload one image at a time.');
+        }
+    });
+    uploadBtn.addEventListener('dragover', event => event.preventDefault());
 });

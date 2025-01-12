@@ -1,3 +1,15 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+    /* For Webkit browsers (Chrome, Safari) */
+    .slider::-webkit-slider-thumb {
+        @apply appearance-none w-5 h-5 rounded-full bg-blue-500 cursor-pointer border-2 border-white ring-2 ring-blue-500;
+    }
+    
+    /* For Firefox */
+    .slider::-moz-range-thumb {
+        @apply appearance-none w-5 h-5 rounded-full bg-blue-500 cursor-pointer border-2 border-white ring-2 ring-blue-500;
+    }
+}
