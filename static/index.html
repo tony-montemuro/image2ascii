@@ -60,7 +60,7 @@
 
           <!-- Size -->
           <strong>Size</strong>
-          <div class="flex gap-2">
+          <div id="size" class="flex gap-2">
 
             <!-- Twitch Option -->
             <div class="relative">
@@ -168,7 +168,7 @@
           </div>
 
           <!-- Width & Height (only shown if user selects "custom" radio) -->
-          <div id="custom-size" class="flex gap-2 sr-only">
+          <div id="custom-size" class="flex gap-2">
             <div class="flex gap-1 items-center">
               <label for="width">Width</label>
               <input
@@ -179,6 +179,7 @@
                 max="1000"
                 step="1"
                 class="outline-none border rounded p-1"
+                disabled
               />
             </div>
             <div class="flex gap-1 items-center">
@@ -191,6 +192,7 @@
                 max="1000"
                 step="1"
                 class="outline-none border rounded p-1"
+                disabled
               />
             </div>
           </div>

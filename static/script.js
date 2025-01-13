@@ -13,7 +13,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const thumbnailWrapper = document.getElementById('thumbnail-wrapper');
     const thumbnail = document.getElementById('thumbnail');
     const thumbnailName = document.getElementById('thumbnail-name');
-    const sizeRadios = document.getElementsByName('size');
+    const sizeContainer = document.getElementById('size');
+    const sizeRadios = sizeContainer.querySelectorAll('input[name="size"]');
 
     /* ===== VARIABLES ===== */
     const size = {
@@ -71,6 +72,8 @@ document.addEventListener('DOMContentLoaded', function() {
         show(imageOptions);
         hide(error);
         error.textContent = '';
+
+        updateSizeInputs(sizeContainer.querySelector('input:checked').value);
     };
 
     function getHeight(imageWidth, imageHeight, type) {
@@ -105,35 +108,8 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     /* ===== EVENT LISTENERS ===== */
-    imageInput.addEventListener('change', event => {
-        const input = event.target;
-        const files = input.files;
 
-        if (files.length > 0) {
-            handleNewImage(files);
-        }
-    });
-
-    brightness.addEventListener('input', event => {
-        brightnessValue.value = event.target.value;
-    });
-    brightnessValue.addEventListener('change', event => {
-        brightness.value = event.target.value;
-    });
-
-    sizeRadios.forEach(radio => {
-        radio.addEventListener('click', event => {
-            const type = event.target.value;
-
-            if (type === "custom") {
-                show(customSize);
-            } else {
-                hide(customSize);
-                updateSizeInputs(type);
-            }
-        });
-    });
-
+    // Upload button
     uploadBtn.addEventListener('drop', event => {
         event.preventDefault();
         
@@ -146,4 +122,41 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     uploadBtn.addEventListener('dragover', event => event.preventDefault());
+    imageInput.addEventListener('change', event => {
+        const input = event.target;
+        const files = input.files;
+
+        if (files.length > 0) {
+            handleNewImage(files);
+        }
+    });
+
+    // Size radio buttons
+    sizeRadios.forEach(radio => {
+        const sizeInputs = customSize.getElementsByTagName('input');
+        
+        radio.addEventListener('click', event => {
+            const changeUsability = isDisabled => {
+                for (const input of sizeInputs) {
+                    isDisabled ? input.removeAttribute('disabled') : input.setAttribute('disabled', 'disabled');
+                }
+            }
+
+            const type = event.target.value;
+            if (type === "custom") {
+                changeUsability(true);
+            } else {
+                changeUsability(false);
+                updateSizeInputs(type);
+            }
+        });
+    });
+
+    // Brightness input
+    brightness.addEventListener('input', event => {
+        brightnessValue.value = event.target.value;
+    });
+    brightnessValue.addEventListener('change', event => {
+        brightness.value = event.target.value;
+    });
 });
