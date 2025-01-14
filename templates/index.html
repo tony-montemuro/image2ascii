@@ -8,7 +8,7 @@
   <body class="w-full h-screen flex justify-center items-center">
     <div class="flex justify-center flex-col gap-2">
       <h1 class="text-center">Image2Ascii</h1>
-      <form id="form" class="flex flex-col gap-2">
+      <form id="form" class="flex flex-col gap-2" method="post">
 
         <!-- Image Upload -->
         <div class="flex justify-center">
@@ -178,8 +178,8 @@
                 min="1"
                 max="1000"
                 step="1"
-                class="outline-none border rounded p-1"
-                disabled
+                class="bg-gray-100 outline-none border rounded p-1"
+                readonly
               />
             </div>
             <div class="flex gap-1 items-center">
@@ -191,8 +191,8 @@
                 min="1"
                 max="1000"
                 step="1"
-                class="outline-none border rounded p-1"
-                disabled
+                class="bg-gray-100 outline-none border rounded p-1"
+                readonly
               />
             </div>
           </div>
@@ -213,7 +213,6 @@
               <input
                 type="number"
                 id="brightness-value"
-                name="brightness-value"
                 min="0"
                 max="100"
                 step="1"
@@ -246,7 +245,6 @@
           <!-- Output -->
           <textarea
             id="output"
-            name="output"
             rows="25"
             cols="100"
             class="border rounded p-2"

@@ -137,9 +137,15 @@ document.addEventListener('DOMContentLoaded', function() {
         const sizeInputs = customSize.getElementsByTagName('input');
         
         radio.addEventListener('click', event => {
-            const changeUsability = isDisabled => {
+            const changeUsability = isReadOnly => {
                 for (const input of sizeInputs) {
-                    isDisabled ? input.removeAttribute('disabled') : input.setAttribute('disabled', 'disabled');
+                    if (isReadOnly) {
+                        input.removeAttribute('readonly');
+                        input.classList.remove('bg-gray-100');
+                    } else {
+                        input.setAttribute('readonly', 'readonly');
+                        input.classList.add('bg-gray-100');
+                    }
                 }
             }
 
@@ -162,8 +168,20 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Form submission
-    form.addEventListener('submit', event => {
+    form.addEventListener('submit', async event => {
         event.preventDefault();
-        console.log("FORM SUBMITTED");
+
+        const form = event.target;
+        const action = form.action;
+        const method = form.method;
+        const formData = new FormData(form);
+
+        let response = await fetch(action, {
+            method,
+            body: formData
+        });
+        let data = await response.json();
+
+        console.log(data);
     });
 });
