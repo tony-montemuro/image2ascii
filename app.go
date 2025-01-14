@@ -248,14 +248,21 @@ func getAscii(c *gin.Context) {
 	}
 }
 
+func getWebClient(c *gin.Context) {
+	c.HTML(http.StatusOK, "index.html", nil)
+}
+
 func main() {
 	router := gin.Default()
+	router.LoadHTMLGlob("templates/*")
+	router.Static("/static", "./static")
+	router.Static("/assets", "./assets")
 
 	// web client
-	router.StaticFS("/static", gin.Dir("static", true))
+	router.GET("/", getWebClient)
 
 	// api
-	router.GET("/api", getAscii)
+	router.POST("/", getAscii)
 
 	router.Run("localhost:8080")
 }

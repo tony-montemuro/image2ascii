@@ -2,13 +2,13 @@
 <html lang="en">
   <head>
     <title>Image2Ascii</title>
-    <link rel="stylesheet" href="styles.css"/>
-    <script src="script.js"></script>
+    <link rel="stylesheet" href="../static/styles.css"/>
+    <script src="../static/script.js"></script>
   </head>
   <body class="w-full h-screen flex justify-center items-center">
     <div class="flex justify-center flex-col gap-2">
       <h1 class="text-center">Image2Ascii</h1>
-      <form class="flex flex-col gap-2">
+      <form id="form" class="flex flex-col gap-2">
 
         <!-- Image Upload -->
         <div class="flex justify-center">
@@ -76,7 +76,7 @@
                 for="twitch" 
                 class="w-24 h-12 bg-twitch hover:bg-twitch/90 inline-flex items-center justify-center cursor-pointer rounded-full border-2 border-transparent peer-checked:ring-2 peer-checked:ring-blue-500 peer-checked:ring-offset-2"
               >
-                <img src="assets/twitch.png" alt="Twitch" class="w-8 h-auto" />
+                <img src="../assets/twitch.png" alt="Twitch" class="w-8 h-auto" />
               </label>
             </div>
 
@@ -93,7 +93,7 @@
                 for="discord" 
                 class="w-24 h-12 bg-discord hover:bg-discord/90 inline-flex items-center justify-center cursor-pointer rounded-full border-2 border-transparent peer-checked:ring-2 peer-checked:ring-blue-500 peer-checked:ring-offset-2"
               >
-                <img src="assets/discord.png" alt="Discord" class="w-8 h-auto" />
+                <img src="../assets/discord.png" alt="Discord" class="w-8 h-auto" />
               </label>
             </div>
 
@@ -199,7 +199,7 @@
 
           <!-- Brightness -->
           <div class="flex flex-col gap-1">
-            <label for="brightness">
+            <label for="brightness" class="w-fit">
               <strong>Brightness</strong>
             </label>
             <div class="flex flex-row gap-2">
@@ -226,23 +226,33 @@
 
           <!-- Invert -->
           <div class="flex flex-col gap-1">
-            <label for="invert">
+            <label for="invert" class="w-fit">
               <strong>Invert</strong>
             </label>
             <input
               type="checkbox"
               id="invert"
               name="invert"
-              class="w-5 h-5 accent-black"
+              class="w-5 h-5 accent-black cursor-pointer"
             />
           </div>
-          <hr />
           <button
-            class="w-fit p-2 border rounded"
+            class="bg-blue-500 hover:bg-blue-500/90 text-white py-2 border rounded-lg"
             type="submit"
           >
-            Submit
+            Convert to ASCII
           </button>
+
+          <!-- Output -->
+          <textarea
+            id="output"
+            name="output"
+            rows="25"
+            cols="100"
+            class="border rounded p-2"
+            placeholder="ASCII will be displayed here"
+            readonly
+          ></textarea>
         </div>
       </form>
     </div>

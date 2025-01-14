@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     /* ===== ELEMENTS ===== */
+    const form = this.getElementById('form');
     const imageInput = document.getElementById('image');
     const imageOptions = document.getElementById('options');
     const customSize = document.getElementById('custom-size');
@@ -158,5 +159,11 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     brightnessValue.addEventListener('change', event => {
         brightness.value = event.target.value;
+    });
+
+    // Form submission
+    form.addEventListener('submit', event => {
+        event.preventDefault();
+        console.log("FORM SUBMITTED");
     });
 });
