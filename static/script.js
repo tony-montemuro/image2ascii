@@ -175,6 +175,11 @@ document.addEventListener('DOMContentLoaded', function() {
         const action = form.action;
         const method = form.method;
         const formData = new FormData(form);
+        formData.delete('size');
+        formData.delete('brightness');
+        for (const a of formData.entries()) {
+            console.log(a)
+        }
 
         let response = await fetch(action, {
             method,

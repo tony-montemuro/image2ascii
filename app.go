@@ -9,7 +9,6 @@ import (
 	_ "image/png"
 	"math"
 	"net/http"
-	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -28,61 +27,52 @@ const (
 
 type BrightnessComparisonFunc func(a, target float64) bool
 
-func getMinBrightness(c *gin.Context) (float64, error) {
-	brightnessVal, ok := c.GetQuery("brightness")
-	errMsg := fmt.Sprintf("invalid brightness: must be a number between %f & %f", MIN_BRIGHTNESS, MAX_BRIGHTNESS)
+type CheckboxBool string
 
-	if ok {
-		brightness, err := strconv.ParseFloat(brightnessVal, 64)
-		if err != nil {
-			return 0, errors.New(errMsg)
-		}
-		if brightness < MIN_BRIGHTNESS || brightness > MAX_BRIGHTNESS {
-			return 0, errors.New(errMsg)
-		}
+func (cb CheckboxBool) Bool() bool {
+	return cb == "on"
+}
 
-		return MAX_BRIGHTNESS - brightness, nil
+type FormData struct {
+	Width      *int         `form:"width"`
+	Height     *int         `form:"height"`
+	IsInvert   CheckboxBool `form:"invert"`
+	Brightness *float64     `form:"brightness"`
+}
+
+func getMinBrightness(f FormData) (float64, error) {
+	brightness := f.Brightness
+	if brightness != nil {
+		if *brightness < MIN_BRIGHTNESS || *brightness > MAX_BRIGHTNESS {
+			return 0, fmt.Errorf("invalid brightness: must be a number between %f & %f", MIN_BRIGHTNESS, MAX_BRIGHTNESS)
+		}
+		return MAX_BRIGHTNESS - *brightness, nil
 	}
 
 	return DEFAULT_BRIGHTNESS, nil
 }
 
-func getWidthAndHeight(bounds image.Rectangle, c *gin.Context) (int, int, error) {
-	widthVal, okWidth := c.GetQuery("width")
-	heightVal, okHeight := c.GetQuery("height")
-	minLength, maxLength := 1, 1000
-	widthErrMsg := fmt.Sprintf("invalid width: must be a number between %d and %d", minLength, maxLength)
-	heightErrMsg := fmt.Sprintf("invalid height: must be a number between %d and %d", minLength, maxLength)
+func getWidthAndHeight(bounds image.Rectangle, f FormData) (int, int, error) {
+	width, height := f.Width, f.Height
+	widthErrMsg := fmt.Sprintf("invalid width: must be a number between %d and %d", MIN_LENGTH, MAX_LENGTH)
+	heightErrMsg := fmt.Sprintf("invalid height: must be a number between %d and %d", MIN_LENGTH, MAX_LENGTH)
 	errs := []string{}
-	width, height := 0, 0
 
-	// width
-	if !okWidth {
-		width = int(math.Ceil(float64(bounds.Max.X) / CHAR_WIDTH))
+	if width == nil {
+		widthVal := int(math.Ceil(float64(bounds.Max.X) / CHAR_WIDTH))
+		width = &widthVal
 	} else {
-		w, err := strconv.ParseInt(widthVal, 10, 32)
-		if err != nil {
+		if *width < MIN_LENGTH || *width > MAX_LENGTH {
 			errs = append(errs, widthErrMsg)
-		} else {
-			width = int(w)
-			if width < minLength || width > maxLength {
-				errs = append(errs, widthErrMsg)
-			}
 		}
 	}
 
-	// height
-	if !okHeight {
-		height = int(math.Ceil(float64(bounds.Max.Y) / CHAR_HEIGHT))
+	if height == nil {
+		heightVal := int(math.Ceil(float64(bounds.Max.Y) / CHAR_HEIGHT))
+		height = &heightVal
 	} else {
-		h, err := strconv.ParseInt(heightVal, 10, 32)
-		if err != nil {
+		if *height < MIN_LENGTH || *height > MAX_LENGTH {
 			errs = append(errs, heightErrMsg)
-		} else {
-			height = int(h)
-			if height < minLength || height > maxLength {
-				errs = append(errs, heightErrMsg)
-			}
 		}
 	}
 
@@ -90,21 +80,7 @@ func getWidthAndHeight(bounds image.Rectangle, c *gin.Context) (int, int, error)
 	if len(errs) > 0 {
 		err = errors.New(strings.Join(errs, ", "))
 	}
-	return width, height, err
-}
-
-func isLightInverted(c *gin.Context) (bool, error) {
-	invertedVal, ok := c.GetQuery("is_inverted")
-
-	if ok {
-		isInverted, err := strconv.ParseBool(invertedVal)
-		if err != nil {
-			return DEFAULT_INVERTED, fmt.Errorf("invalid inverted: must be either 'true' or 'false'")
-		}
-		return isInverted, nil
-	}
-
-	return DEFAULT_INVERTED, nil
+	return *width, *height, err
 }
 
 func getLinearizedChannel(colorChannel uint8) float64 {
@@ -147,21 +123,23 @@ func generateAscii(img image.Image, c *gin.Context) ([]string, int, error) {
 	ascii := []string{}
 	bounds := img.Bounds()
 
-	// get query params
-	minBrightness, err := getMinBrightness(c)
+	// get form data
+	var form FormData
+	if err := c.ShouldBind(&form); err != nil {
+		return ascii, http.StatusBadRequest, err
+	}
+
+	minBrightness, err := getMinBrightness(form)
 	if err != nil {
 		return ascii, http.StatusBadRequest, err
 	}
 
-	userWidth, userHeight, err := getWidthAndHeight(bounds, c)
+	userWidth, userHeight, err := getWidthAndHeight(bounds, form)
 	if err != nil {
 		return ascii, http.StatusBadRequest, err
 	}
 
-	isInverted, err := isLightInverted(c)
-	if err != nil {
-		return ascii, http.StatusBadRequest, err
-	}
+	isInverted := form.IsInvert.Bool()
 	isPixelOn := getBrightnessComparisonFunc(isInverted)
 
 	pixelWidth, pixelHeight := CHAR_WIDTH*userWidth, CHAR_HEIGHT*userHeight
