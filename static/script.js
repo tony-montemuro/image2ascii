@@ -15,6 +15,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const thumbnail = document.getElementById('thumbnail');
     const thumbnailName = document.getElementById('thumbnail-name');
     const sizeContainer = document.getElementById('size');
+    const apiError = document.getElementById('api-error');
+    const output = document.getElementById('output');
     const sizeRadios = sizeContainer.querySelectorAll('input[name="size"]');
 
     /* ===== VARIABLES ===== */
@@ -108,6 +110,16 @@ document.addEventListener('DOMContentLoaded', function() {
         heightInput.value = size[type].height;
     };
 
+    function addApiErrorMessage(message) {
+        apiError.textContent = message;
+        show(apiError);
+    }
+
+    function removeApiErrorMessage() {
+        apiError.textContent = '';
+        hide(apiError);
+    }
+
     /* ===== EVENT LISTENERS ===== */
 
     // Upload button
@@ -176,17 +188,27 @@ document.addEventListener('DOMContentLoaded', function() {
         const method = form.method;
         const formData = new FormData(form);
         formData.delete('size');
-        formData.delete('brightness');
-        for (const a of formData.entries()) {
-            console.log(a)
+
+        try {
+            let response = await fetch(action, {
+                method,
+                body: formData
+            });
+            let data = await response.json();
+
+            output.value = '';
+            if (response.status !== 200) {
+                throw new Error(data.error);
+            }
+
+            removeApiErrorMessage();
+            data.forEach(row => {
+                output.value += row + "\n";
+            });
+
+            console.log(data);
+        } catch(error) {
+            addApiErrorMessage(error.message);
         }
-
-        let response = await fetch(action, {
-            method,
-            body: formData
-        });
-        let data = await response.json();
-
-        console.log(data);
     });
 });
