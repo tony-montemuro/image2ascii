@@ -1,33 +1,34 @@
 document.addEventListener('DOMContentLoaded', function() {
     /* ===== ELEMENTS ===== */
     const form = this.getElementById('form');
-    const imageInput = document.getElementById('image');
-    const imageOptions = document.getElementById('options');
-    const customSize = document.getElementById('custom-size');
-    const widthInput = document.getElementById('width');
-    const heightInput = document.getElementById('height');
-    const brightness = document.getElementById('brightness');
-    const brightnessValue = document.getElementById('brightness-value');
-    const uploadBtn = document.getElementById('upload');
-    const error = document.getElementById('error');
-    const imagePlaceholder = document.getElementById('img-placeholder');
-    const thumbnailWrapper = document.getElementById('thumbnail-wrapper');
-    const thumbnail = document.getElementById('thumbnail');
-    const thumbnailName = document.getElementById('thumbnail-name');
-    const sizeContainer = document.getElementById('size');
-    const apiError = document.getElementById('api-error');
-    const output = document.getElementById('output');
+    const imageInput = this.getElementById('image');
+    const imageOptions = this.getElementById('options');
+    const customSize = this.getElementById('custom-size');
+    const widthInput = this.getElementById('width');
+    const heightInput = this.getElementById('height');
+    const brightness = this.getElementById('brightness');
+    const brightnessValue = this.getElementById('brightness-value');
+    const uploadBtn = this.getElementById('upload');
+    const error = this.getElementById('error');
+    const imagePlaceholder = this.getElementById('img-placeholder');
+    const thumbnailWrapper = this.getElementById('thumbnail-wrapper');
+    const thumbnail = this.getElementById('thumbnail');
+    const thumbnailName = this.getElementById('thumbnail-name');
+    const sizeContainer = this.getElementById('size');
+    const output = this.getElementById('output');
     const sizeRadios = sizeContainer.querySelectorAll('input[name="size"]');
 
     /* ===== VARIABLES ===== */
     const size = {
         twitch: {
             width: 30,
-            height: undefined
+            height: undefined,
+            maxHeight: 16
         },
         discord: {
-            width: 33,
-            height: undefined
+            width: 32,
+            height: undefined,
+            maxHeight: 62
         },
         small: {
             width: 20,
@@ -53,6 +54,16 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function addErrorMessage(message) {
+        show(error);
+        error.textContent = message;
+    };
+
+    function removeErrorMessage() {
+        hide(error);
+        error.textContent = '';
+    }
+
+    function hideOptions(message) {
         thumbnail.src = '';
         thumbnail.alt = '';
         thumbnailName.textContent = '';
@@ -61,9 +72,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
         imageInput.value = '';
         hide(imageOptions);
-        show(error);
-        error.textContent = message;
-    };
+        addErrorMessage(message);
+    }
 
     function displayOptions(image) {
         thumbnail.src = image.src;
@@ -80,7 +90,9 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     function getHeight(imageWidth, imageHeight, type) {
-        return Math.round((size[type].width * imageHeight) / imageWidth / 2);
+        const maxHeight = size[type].maxHeight ?? Number.MAX_SAFE_INTEGER;
+        const calculatedHeight = Math.round((size[type].width * imageHeight) / imageWidth / 2);
+        return Math.min(calculatedHeight, maxHeight);
     }
 
     function checkImage(image) {
@@ -101,7 +113,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 checkImage(this);
             }
         } else {
-            addErrorMessage('File type not supported. Please upload a JPEG or PNG file.');
+            hideOptions('File type not supported. Please upload a JPEG or PNG file.');
         }
     };
 
@@ -110,14 +122,8 @@ document.addEventListener('DOMContentLoaded', function() {
         heightInput.value = size[type].height;
     };
 
-    function addApiErrorMessage(message) {
-        apiError.textContent = message;
-        show(apiError);
-    }
-
-    function removeApiErrorMessage() {
-        apiError.textContent = '';
-        hide(apiError);
+    function renderOutput() {
+        show(output);
     }
 
     /* ===== EVENT LISTENERS ===== */
@@ -131,7 +137,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const changeEvent = new Event('change');
             imageInput.dispatchEvent(changeEvent);
         } else {
-            addErrorMessage('You can only upload one image at a time.');
+            hideOptions('You can only upload one image at a time.');
         }
     });
     uploadBtn.addEventListener('dragover', event => event.preventDefault());
@@ -196,19 +202,23 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             let data = await response.json();
 
-            output.value = '';
+            output.textContent = '';
             if (response.status !== 200) {
                 throw new Error(data.error);
             }
 
-            removeApiErrorMessage();
+            removeErrorMessage();
             data.forEach(row => {
-                output.value += row + "\n";
+                output.textContent += row + "\n";
             });
+            renderOutput();
 
+            data.forEach(row => {
+                console.log(row.length);
+            });
             console.log(data);
         } catch(error) {
-            addApiErrorMessage(error.message);
+            addErrorMessage(error.message);
         }
     });
 });

@@ -6,256 +6,253 @@
     <script src="../static/script.js"></script>
   </head>
   <body class="w-full h-screen flex justify-center items-center">
-    <div class="flex justify-center flex-col gap-2">
+    <div class="flex justify-center flex-col gap-2 items-center">
       <h1 class="text-center">Image2Ascii</h1>
       <form id="form" class="flex flex-col gap-2" method="post">
+        <div class="flex flex-row gap-2">
 
-        <!-- Image Upload -->
-        <div class="flex justify-center">
-          <label
-            for="image"
-            class="w-96 h-52 bg-gray-200 hover:bg-gray-200/80 border border-dashed border-gray-400 rounded-lg cursor-pointer btn p-1 rounded"
-            id="upload"
-          >
+          <!-- Image Upload -->
+          <div class="flex justify-center">
+            <label
+              for="image"
+              class="w-96 h-52 bg-gray-200 hover:bg-gray-200/80 border border-dashed border-gray-400 rounded-lg cursor-pointer btn p-1 rounded"
+              id="upload"
+            >
 
-            <!-- Left Side -->
-            <div class="h-full flex items-center">
-              <div class="flex flex-row items-center">
-                <div id="img-placeholder" class="p-4">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="5rem" height="5rem" viewBox="0 0 24 24" fill="#000000">
-                    <path d="M0 0h24v24H0V0z" fill="none"/>
-                    <path d="M18 20H4V6h9V4H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-9h-2v9zm-7.79-3.17l-1.96-2.36L5.5 18h11l-3.54-4.71zM20 4V1h-2v3h-3c.01.01 0 2 0 2h3v2.99c.01.01 2 0 2 0V6h3V4h-3z"/>
-                  </svg>
+              <!-- Left Side -->
+              <div class="h-full flex items-center">
+                <div class="flex flex-row items-center">
+                  <div id="img-placeholder" class="p-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="5rem" height="5rem" viewBox="0 0 24 24" fill="#000000">
+                      <path d="M0 0h24v24H0V0z" fill="none"/>
+                      <path d="M18 20H4V6h9V4H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-9h-2v9zm-7.79-3.17l-1.96-2.36L5.5 18h11l-3.54-4.71zM20 4V1h-2v3h-3c.01.01 0 2 0 2h3v2.99c.01.01 2 0 2 0V6h3V4h-3z"/>
+                    </svg>
+                  </div>
+                  <div id="thumbnail-wrapper" class="sr-only w-40 h-full p-2 flex items-center flex flex-col gap-1">
+                    <img id="thumbnail" class="w-full h-40 object-contain grayscale-[75%]" src="" title="Your Image" />
+                    <span id="thumbnail-name" class="w-full text-xs text-center text-ellipsis overflow-hidden whitespace-nowrap"></span>
+                  </div>
                 </div>
-                <div id="thumbnail-wrapper" class="sr-only w-40 h-full p-2 flex items-center flex flex-col gap-1">
-                  <img id="thumbnail" class="w-full h-40 object-contain grayscale-[75%]" src="" title="Your Image" />
-                  <span id="thumbnail-name" class="w-full text-xs text-center text-ellipsis overflow-hidden whitespace-nowrap"></span>
+
+                <!-- Right Side -->
+                <div class="w-full flex flex-col items-center justify-center">
+                  <strong class="text-lg">Drag & Drop Image</strong>
+                  <span>or</span>
+                  <div class="w-28 h-12 bg-blue-500 hover:bg-blue-500/90 inline-flex items-center justify-center cursor-pointer rounded-full border-2 border-transparent">
+                    <span class="text-white">Browse Files</span>
+                  </div>
+                </div>
+              </div>
+            </label>
+            <input 
+              type="file"
+              id="image"
+              name="image"
+              accept="image/png, image/jpg, image/jpeg"
+              class="sr-only"
+            />
+          </div>
+
+          <!-- Options -->
+          <div id="options" class="sr-only flex flex-col gap-2 items-center">
+            <div class="flex flex-col gap-2 w-fit bg-gray-200 border border-gray-400 rounded p-4">
+
+              <!-- Size -->
+              <strong>Size</strong>
+              <div id="size" class="flex gap-2">
+
+                <!-- Twitch Option -->
+                <div class="relative">
+                  <input 
+                    type="radio" 
+                    id="twitch"
+                    name="size" 
+                    value="twitch" 
+                    class="peer absolute opacity-0 w-0 h-0"
+                    checked
+                  >
+                  <label 
+                    for="twitch" 
+                    class="w-24 h-12 bg-twitch hover:bg-twitch/90 inline-flex items-center justify-center cursor-pointer rounded-full border-2 border-transparent peer-checked:ring-2 peer-checked:ring-blue-500 peer-checked:ring-offset-2"
+                  >
+                    <img src="../assets/twitch.png" alt="Twitch" class="w-8 h-auto" />
+                  </label>
+                </div>
+
+                <!-- Discord Option -->
+                <div class="relative">
+                  <input 
+                    type="radio" 
+                    id="discord" 
+                    name="size" 
+                    value="discord" 
+                    class="peer absolute opacity-0 w-0 h-0"
+                  >
+                  <label 
+                    for="discord" 
+                    class="w-24 h-12 bg-discord hover:bg-discord/90 inline-flex items-center justify-center cursor-pointer rounded-full border-2 border-transparent peer-checked:ring-2 peer-checked:ring-blue-500 peer-checked:ring-offset-2"
+                  >
+                    <img src="../assets/discord.png" alt="Discord" class="w-8 h-auto" />
+                  </label>
+                </div>
+
+                <!-- Small Option -->
+                <div class="flex justify-center w-24">
+                  <input 
+                    type="radio" 
+                    id="small" 
+                    name="size" 
+                    value="small" 
+                    class="peer absolute opacity-0 w-0 h-0"
+                  >
+                  <label 
+                    for="small" 
+                    class="w-full px-4 py-2 bg-red-600 hover:bg-red-600/90 cursor-pointer border rounded-full text-white peer-checked:ring-2 peer-checked:ring-blue-500 peer-checked:ring-offset-2"
+                  >
+                    <span class="inline-block align-middle text-center w-full">Small</span>
+                  </label>
+                </div>
+
+                <!-- Medium Option -->
+                <div class="flex justify-center w-24">
+                  <input 
+                    type="radio" 
+                    id="medium" 
+                    name="size" 
+                    value="medium" 
+                    class="peer absolute opacity-0 w-0 h-0"
+                  >
+                  <label 
+                    for="medium" 
+                    class="w-full px-4 py-2 bg-yellow-600 hover:bg-yellow-600/90 cursor-pointer border rounded-full text-white peer-checked:ring-2 peer-checked:ring-blue-500 peer-checked:ring-offset-2"
+                  >
+                    <span class="inline-block align-middle text-center w-full">Medium</span>
+                  </label>
+                </div>
+
+                <!-- Large Option -->
+                <div class="flex justify-center w-24">
+                  <input 
+                    type="radio" 
+                    id="large" 
+                    name="size" 
+                    value="large" 
+                    class="peer absolute opacity-0 w-0 h-0"
+                  >
+                  <label 
+                    for="large" 
+                    class="w-full px-4 py-2 bg-green-600 hover:bg-green-600/90 cursor-pointer border rounded-full text-white peer-checked:ring-2 peer-checked:ring-blue-500 peer-checked:ring-offset-2"
+                  >
+                    <span class="inline-block align-middle text-center w-full">Large</span>
+                  </label>
+                </div>
+
+                <!-- Custom Option -->
+                <div class="flex justify-center w-24">
+                  <input 
+                    type="radio" 
+                    id="custom" 
+                    name="size" 
+                    value="custom" 
+                    class="peer absolute opacity-0 w-0 h-0"
+                  >
+                  <label 
+                    for="custom"
+                    class="w-full px-4 py-2 bg-gray-400 hover:bg-gray-400/90 cursor-pointer border rounded-full text-white peer-checked:ring-2 peer-checked:ring-blue-500 peer-checked:ring-offset-2"
+                  >
+                    <span class="inline-block align-middle text-center w-full">Custom</span>
+                  </label>
+                </div>
+
+              </div>
+
+              <!-- Width & Height (only shown if user selects "custom" radio) -->
+              <div id="custom-size" class="flex gap-2">
+                <div class="flex gap-1 items-center">
+                  <label for="width">Width</label>
+                  <input
+                    type="number"
+                    id="width"
+                    name="width"
+                    min="1"
+                    max="1000"
+                    step="1"
+                    class="bg-gray-100 outline-none border rounded p-1"
+                    readonly
+                  />
+                </div>
+                <div class="flex gap-1 items-center">
+                  <label for="height">Height</label>
+                  <input
+                    type="number"
+                    id="height"
+                    name="height"
+                    min="1"
+                    max="1000"
+                    step="1"
+                    class="bg-gray-100 outline-none border rounded p-1"
+                    readonly
+                  />
                 </div>
               </div>
 
-              <!-- Right Side -->
-              <div class="w-full flex flex-col items-center justify-center">
-                <strong class="text-lg">Drag & Drop Image</strong>
-                <span>or</span>
-                <div class="w-28 h-12 bg-blue-500 hover:bg-blue-500/90 inline-flex items-center justify-center cursor-pointer rounded-full border-2 border-transparent">
-                  <span class="text-white">Browse Files</span>
+              <!-- Brightness -->
+              <div class="flex flex-col gap-1">
+                <label for="brightness" class="w-fit">
+                  <strong>Brightness</strong>
+                </label>
+                <div class="flex flex-row gap-2">
+                  <input
+                    type="range"
+                    id="brightness"
+                    name="brightness"
+                    min="0"
+                    max="100"
+                  />
+                  <input
+                    type="number"
+                    id="brightness-value"
+                    min="0"
+                    max="100"
+                    step="1"
+                    value="50"
+                    title="Brightness"
+                    class="outline-none border rounded p-1"
+                  />
                 </div>
               </div>
+
+              <!-- Invert -->
+              <div class="flex flex-col gap-1">
+                <label for="invert" class="w-fit">
+                  <strong>Invert</strong>
+                </label>
+                <input
+                  type="checkbox"
+                  id="invert"
+                  name="invert"
+                  class="w-5 h-5 accent-black cursor-pointer"
+                />
+              </div>
+
+              <button
+                class="bg-blue-500 hover:bg-blue-500/90 text-white py-2 border rounded-lg"
+                type="submit"
+              >
+                Convert to ASCII
+              </button>
             </div>
-          </label>
-          <input 
-            type="file"
-            id="image"
-            name="image"
-            accept="image/png, image/jpg, image/jpeg"
-            class="sr-only"
-          />
+
+          </div>
         </div>
 
         <!-- Error message -->
         <div id="error" class="sr-only text-red-500 text-center"></div>
 
-        <!-- Options -->
-        <div id="options" class="sr-only flex flex-col gap-2">
-
-          <!-- Size -->
-          <strong>Size</strong>
-          <div id="size" class="flex gap-2">
-
-            <!-- Twitch Option -->
-            <div class="relative">
-              <input 
-                type="radio" 
-                id="twitch"
-                name="size" 
-                value="twitch" 
-                class="peer absolute opacity-0 w-0 h-0"
-                checked
-              >
-              <label 
-                for="twitch" 
-                class="w-24 h-12 bg-twitch hover:bg-twitch/90 inline-flex items-center justify-center cursor-pointer rounded-full border-2 border-transparent peer-checked:ring-2 peer-checked:ring-blue-500 peer-checked:ring-offset-2"
-              >
-                <img src="../assets/twitch.png" alt="Twitch" class="w-8 h-auto" />
-              </label>
-            </div>
-
-            <!-- Discord Option -->
-            <div class="relative">
-              <input 
-                type="radio" 
-                id="discord" 
-                name="size" 
-                value="discord" 
-                class="peer absolute opacity-0 w-0 h-0"
-              >
-              <label 
-                for="discord" 
-                class="w-24 h-12 bg-discord hover:bg-discord/90 inline-flex items-center justify-center cursor-pointer rounded-full border-2 border-transparent peer-checked:ring-2 peer-checked:ring-blue-500 peer-checked:ring-offset-2"
-              >
-                <img src="../assets/discord.png" alt="Discord" class="w-8 h-auto" />
-              </label>
-            </div>
-
-            <!-- Small Option -->
-            <div class="flex justify-center w-24">
-              <input 
-                type="radio" 
-                id="small" 
-                name="size" 
-                value="small" 
-                class="peer absolute opacity-0 w-0 h-0"
-              >
-              <label 
-                for="small" 
-                class="w-full px-4 py-2 bg-red-600 hover:bg-red-600/90 cursor-pointer border rounded-full text-white peer-checked:ring-2 peer-checked:ring-blue-500 peer-checked:ring-offset-2"
-              >
-                <span class="inline-block align-middle text-center w-full">Small</span>
-              </label>
-            </div>
-
-            <!-- Medium Option -->
-            <div class="flex justify-center w-24">
-              <input 
-                type="radio" 
-                id="medium" 
-                name="size" 
-                value="medium" 
-                class="peer absolute opacity-0 w-0 h-0"
-              >
-              <label 
-                for="medium" 
-                class="w-full px-4 py-2 bg-yellow-600 hover:bg-yellow-600/90 cursor-pointer border rounded-full text-white peer-checked:ring-2 peer-checked:ring-blue-500 peer-checked:ring-offset-2"
-              >
-                <span class="inline-block align-middle text-center w-full">Medium</span>
-              </label>
-            </div>
-
-            <!-- Large Option -->
-            <div class="flex justify-center w-24">
-              <input 
-                type="radio" 
-                id="large" 
-                name="size" 
-                value="large" 
-                class="peer absolute opacity-0 w-0 h-0"
-              >
-              <label 
-                for="large" 
-                class="w-full px-4 py-2 bg-green-600 hover:bg-green-600/90 cursor-pointer border rounded-full text-white peer-checked:ring-2 peer-checked:ring-blue-500 peer-checked:ring-offset-2"
-              >
-                <span class="inline-block align-middle text-center w-full">Large</span>
-              </label>
-            </div>
-
-            <!-- Custom Option -->
-            <div class="flex justify-center w-24">
-              <input 
-                type="radio" 
-                id="custom" 
-                name="size" 
-                value="custom" 
-                class="peer absolute opacity-0 w-0 h-0"
-              >
-              <label 
-                for="custom"
-                class="w-full px-4 py-2 bg-gray-400 hover:bg-gray-400/90 cursor-pointer border rounded-full text-white peer-checked:ring-2 peer-checked:ring-blue-500 peer-checked:ring-offset-2"
-              >
-                <span class="inline-block align-middle text-center w-full">Custom</span>
-              </label>
-            </div>
-
-          </div>
-
-          <!-- Width & Height (only shown if user selects "custom" radio) -->
-          <div id="custom-size" class="flex gap-2">
-            <div class="flex gap-1 items-center">
-              <label for="width">Width</label>
-              <input
-                type="number"
-                id="width"
-                name="width"
-                min="1"
-                max="1000"
-                step="1"
-                class="bg-gray-100 outline-none border rounded p-1"
-                readonly
-              />
-            </div>
-            <div class="flex gap-1 items-center">
-              <label for="height">Height</label>
-              <input
-                type="number"
-                id="height"
-                name="height"
-                min="1"
-                max="1000"
-                step="1"
-                class="bg-gray-100 outline-none border rounded p-1"
-                readonly
-              />
-            </div>
-          </div>
-
-          <!-- Brightness -->
-          <div class="flex flex-col gap-1">
-            <label for="brightness" class="w-fit">
-              <strong>Brightness</strong>
-            </label>
-            <div class="flex flex-row gap-2">
-              <input
-                type="range"
-                id="brightness"
-                name="brightness"
-                min="0"
-                max="100"
-              />
-              <input
-                type="number"
-                id="brightness-value"
-                min="0"
-                max="100"
-                step="1"
-                value="50"
-                title="Brightness"
-                class="outline-none border rounded p-1"
-              />
-            </div>
-          </div>
-
-          <!-- Invert -->
-          <div class="flex flex-col gap-1">
-            <label for="invert" class="w-fit">
-              <strong>Invert</strong>
-            </label>
-            <input
-              type="checkbox"
-              id="invert"
-              name="invert"
-              class="w-5 h-5 accent-black cursor-pointer"
-            />
-          </div>
-          <button
-            class="bg-blue-500 hover:bg-blue-500/90 text-white py-2 border rounded-lg"
-            type="submit"
-          >
-            Convert to ASCII
-          </button>
-
-          <!-- API error message -->
-          <div id="api-error" class="sr-only text-red-500 text-center"></div>
-
-          <!-- Output -->
-          <textarea
-            id="output"
-            rows="25"
-            cols="100"
-            class="border rounded p-2"
-            placeholder="ASCII will be displayed here"
-            readonly
-          ></textarea>
-        </div>
       </form>
+
+      <!-- Output -->
+      <div id="output" class="border rounded p-2 font-mono whitespace-pre-wrap w-fit sr-only"></div>
     </div>
   </body>
 </html>
