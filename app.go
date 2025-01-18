@@ -9,20 +9,37 @@ import (
 	_ "image/png"
 	"math"
 	"net/http"
+	"slices"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 )
 
+// styles
 const (
-	CHAR_WIDTH         = 2
-	CHAR_HEIGHT        = 4
-	MIN_BRIGHTNESS     = 0.0
-	MAX_BRIGHTNESS     = 100.0
+	STYLE_NORMAL     = "normal"
+	STYLE_BRIGHTNESS = "brightness"
+)
+
+// defaults
+const (
 	DEFAULT_BRIGHTNESS = 50.0
 	DEFAULT_INVERTED   = false
-	MIN_LENGTH         = 1
-	MAX_LENGTH         = 1000
+	DEFAULT_STYLE      = STYLE_NORMAL
+)
+
+// ascii properties
+const (
+	CHAR_WIDTH  = 2
+	CHAR_HEIGHT = 4
+)
+
+// limits
+const (
+	MIN_BRIGHTNESS = 0.0
+	MAX_BRIGHTNESS = 100.0
+	MIN_LENGTH     = 1
+	MAX_LENGTH     = 1000
 )
 
 type BrightnessComparisonFunc func(a, target float64) bool
@@ -38,6 +55,7 @@ type FormData struct {
 	Height     *int         `form:"height"`
 	IsInvert   CheckboxBool `form:"invert"`
 	Brightness *float64     `form:"brightness"`
+	Style      *string      `form:"style"`
 }
 
 func getMinBrightness(f FormData) (float64, error) {
@@ -83,6 +101,19 @@ func getWidthAndHeight(bounds image.Rectangle, f FormData) (int, int, error) {
 	return *width, *height, err
 }
 
+func getStyle(f FormData) (string, error) {
+	style := f.Style
+	if style != nil {
+		styles := []string{STYLE_NORMAL, STYLE_BRIGHTNESS}
+		if slices.Contains(styles, *style) {
+			return "", fmt.Errorf("invalid style: must be a number between %f & %f", MIN_BRIGHTNESS, MAX_BRIGHTNESS)
+		}
+		return *style, nil
+	}
+
+	return DEFAULT_STYLE, nil
+}
+
 func getLinearizedChannel(colorChannel uint8) float64 {
 	v := float64(colorChannel) / 255.0
 
@@ -97,7 +128,33 @@ func getLuminance(r float64, g float64, b float64) float64 {
 	return (0.2126 * r) + (0.7152 * g) + (0.0722 * b)
 }
 
-func getPercievedBrightness(luminance float64) float64 {
+func getPixelLuminance(pixel color.Color) float64 {
+	r, g, b, _ := pixel.RGBA()
+
+	// convert to 8-bit value
+	red := uint8(r >> 8)
+	green := uint8(g >> 8)
+	blue := uint8(b >> 8)
+
+	// linearize red, green, blue
+	lr, lg, lb := getLinearizedChannel(red), getLinearizedChannel(green), getLinearizedChannel(blue)
+
+	// calculate luminance
+	return getLuminance(lr, lg, lb)
+}
+
+func clampLuminance(luminance float64) float64 {
+	if luminance < 0 {
+		return 0
+	}
+	if luminance > 1 {
+		return 1
+	}
+	return luminance
+}
+
+func getPercievedBrightness(l float64) float64 {
+	luminance := clampLuminance(l)
 	if luminance <= 0.008856 {
 		return luminance * 903.3
 	} else {
@@ -139,30 +196,24 @@ func generateAscii(img image.Image, c *gin.Context) ([]string, int, error) {
 		return ascii, http.StatusBadRequest, err
 	}
 
+	style, err := getStyle(form)
+	if err != nil {
+		return ascii, http.StatusBadRequest, err
+	}
+
 	isInverted := form.IsInvert.Bool()
 	isPixelOn := getBrightnessComparisonFunc(isInverted)
 
-	pixelWidth, pixelHeight := CHAR_WIDTH*userWidth, CHAR_HEIGHT*userHeight
+	totalWidth, totalHeight := CHAR_WIDTH*userWidth, CHAR_HEIGHT*userHeight
 	originalWidth, originalHeight := bounds.Max.X-bounds.Min.X, bounds.Max.Y-bounds.Min.Y
-	scaleX, scaleY := float64(pixelWidth)/float64(originalWidth), float64(pixelHeight)/float64(originalHeight)
+	scaleX, scaleY := float64(totalWidth)/float64(originalWidth), float64(totalHeight)/float64(originalHeight)
 
 	pixelsToAscii := func(baseX, baseY int) rune {
 		transformedX, transformedY := baseX*CHAR_WIDTH, baseY*CHAR_HEIGHT
 		var offset uint8 = 0
 
 		getPixelBrightness := func(pixel color.Color) float64 {
-			r, g, b, _ := pixel.RGBA()
-
-			// convert to 8-bit value
-			red := uint8(r >> 8)
-			green := uint8(g >> 8)
-			blue := uint8(b >> 8)
-
-			// linearize red, green, blue
-			lr, lg, lb := getLinearizedChannel(red), getLinearizedChannel(green), getLinearizedChannel(blue)
-
-			// calculate luminance
-			luminance := getLuminance(lr, lg, lb)
+			luminance := getPixelLuminance(pixel)
 
 			// return percieved brightness
 			return getPercievedBrightness(luminance)
@@ -193,12 +244,90 @@ func generateAscii(img image.Image, c *gin.Context) ([]string, int, error) {
 		return rune(0x2800 + int(offset))
 	}
 
-	for y := 0; y < userHeight; y++ {
-		var builder strings.Builder
-		for x := 0; x < userWidth; x++ {
-			builder.WriteRune(pixelsToAscii(x, y))
+	// setup oldPixels storage, used by floyd-steinberg dithering
+	oldPixels := make([][]float64, totalHeight)
+	for y := range oldPixels {
+		oldPixels[y] = make([]float64, totalWidth)
+		for x := range oldPixels[y] {
+			oldPixels[y][x] = -1.0
 		}
-		ascii = append(ascii, builder.String())
+	}
+	oldPixels[0][0] = getPixelLuminance(img.At(0, 0))
+
+	pixelsToAscii2 := func(baseX, baseY int) rune {
+		getOriginalCoords := func(x, y int) (int, int) {
+			originalX, originalY := float64(x)/float64(scaleX), float64(y)/float64(scaleY)
+			return int(math.Round(originalX)), int(math.Round(originalY))
+		}
+
+		transformedX, transformedY := baseX*CHAR_WIDTH, baseY*CHAR_HEIGHT
+		var offset uint8 = 0
+
+		for dy := 0; dy < int(CHAR_HEIGHT); dy++ {
+			for dx := 0; dx < int(CHAR_WIDTH); dx++ {
+				x, y := transformedX+dx, transformedY+dy
+				luminance := oldPixels[y][x]
+				brightness := getPercievedBrightness(luminance)
+				isPixelEnabled := isPixelOn(brightness, minBrightness)
+				quantError := luminance
+				if isPixelEnabled {
+					offset |= (1 << getPixelNumber(dx, dy))
+					quantError = luminance - 1.0
+				}
+
+				// dithering
+				if x+1 < totalWidth {
+					if oldPixels[y][x+1] == -1.0 {
+						originalX, originalY := getOriginalCoords(x+1, y)
+						oldPixels[y][x+1] = getPixelLuminance(img.At(originalX, originalY))
+					}
+					oldPixels[y][x+1] = oldPixels[y][x+1] + quantError*(7.0/16.0)
+				}
+				if x-1 >= 0 && y+1 < totalHeight {
+					if oldPixels[y+1][x-1] == -1.0 {
+						originalX, originalY := getOriginalCoords(x-1, y+1)
+						oldPixels[y+1][x-1] = getPixelLuminance(img.At(originalX, originalY))
+					}
+					oldPixels[y+1][x-1] = oldPixels[y+1][x-1] + quantError*(3.0/16.0)
+				}
+				if y+1 < totalHeight {
+					if oldPixels[y+1][x] == -1.0 {
+						originalX, originalY := getOriginalCoords(x, y+1)
+						oldPixels[y+1][x] = getPixelLuminance(img.At(originalX, originalY))
+					}
+					oldPixels[y+1][x] = oldPixels[y+1][x] + quantError*(5.0/16.0)
+				}
+				if y+1 < totalHeight && x+1 < totalWidth {
+					if oldPixels[y+1][x+1] == -1.0 {
+						originalX, originalY := getOriginalCoords(x+1, y+1)
+						oldPixels[y+1][x+1] = getPixelLuminance(img.At(originalX, originalY))
+					}
+					oldPixels[y+1][x+1] = oldPixels[y+1][x+1] + quantError*(1.0/16.0)
+				}
+			}
+		}
+
+		return rune(0x2800 + int(offset))
+	}
+
+	switch style {
+	case STYLE_BRIGHTNESS:
+		for y := 0; y < userHeight; y++ {
+			var builder strings.Builder
+			for x := 0; x < userWidth; x++ {
+				builder.WriteRune(pixelsToAscii(x, y))
+			}
+			ascii = append(ascii, builder.String())
+		}
+	case STYLE_NORMAL:
+		for y := 0; y < userHeight; y++ {
+			var builder strings.Builder
+			for x := 0; x < userWidth; x++ {
+				builder.WriteRune(pixelsToAscii2(x, y))
+			}
+			ascii = append(ascii, builder.String())
+		}
+		fmt.Println(oldPixels)
 	}
 
 	return ascii, http.StatusOK, nil
