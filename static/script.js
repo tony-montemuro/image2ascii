@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const sizeContainer = this.getElementById('size');
     const output = this.getElementById('output');
     const sizeRadios = sizeContainer.querySelectorAll('input[name="size"]');
+    const sizeRadioLabels = sizeContainer.getElementsByTagName('label');
 
     /* ===== VARIABLES ===== */
     const size = {
@@ -129,6 +130,7 @@ document.addEventListener('DOMContentLoaded', function() {
     /* ===== EVENT LISTENERS ===== */
 
     // Upload button
+    uploadBtn.addEventListener('keydown', event => event.key === "Enter" ? imageInput.click() : null);
     uploadBtn.addEventListener('drop', event => {
         event.preventDefault();
         
@@ -176,6 +178,15 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+    for (const label of sizeRadioLabels) {
+        label.addEventListener('keydown', event => {
+            if (event.key === " ") {
+                event.preventDefault();
+                event.target.click();
+                event.target.focus();
+            }
+        });
+    }
 
     // Brightness input
     brightness.addEventListener('input', event => {
