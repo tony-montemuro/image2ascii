@@ -59,11 +59,20 @@ type FormData struct {
 	Style      *string      `form:"style"`
 }
 
-func validateBrightness(f FormData) error {
-	brightness := f.Brightness
+type RelativePosition struct {
+	Dx int
+	Dy int
+}
 
-	if brightness != nil {
-		if *brightness < MIN_BRIGHTNESS || *brightness > MAX_BRIGHTNESS {
+type DitherNode struct {
+	RelativePosition RelativePosition
+	value            float64
+}
+
+func validateBrightness(f *FormData) error {
+	if f.Brightness != nil {
+		brightness := *f.Brightness
+		if brightness < MIN_BRIGHTNESS || brightness > MAX_BRIGHTNESS {
 			return fmt.Errorf("invalid brightness: must be a number between %f & %f", MIN_BRIGHTNESS, MAX_BRIGHTNESS)
 		}
 	} else {
@@ -74,8 +83,7 @@ func validateBrightness(f FormData) error {
 	return nil
 }
 
-func validateWidthAndHeight(f FormData, bounds image.Rectangle) error {
-	width, height := *f.Width, *f.Height
+func validateWidthAndHeight(f *FormData, bounds image.Rectangle) error {
 	widthErrMsg := fmt.Sprintf("invalid width: must be a number between %d and %d", MIN_LENGTH, MAX_LENGTH)
 	heightErrMsg := fmt.Sprintf("invalid height: must be a number between %d and %d", MIN_LENGTH, MAX_LENGTH)
 	errs := []string{}
@@ -83,7 +91,7 @@ func validateWidthAndHeight(f FormData, bounds image.Rectangle) error {
 	if f.Width == nil {
 		widthVal := DEFAULT_WIDTH
 		f.Width = &widthVal
-	} else if width < MIN_LENGTH || width > MAX_LENGTH {
+	} else if *f.Width < MIN_LENGTH || *f.Width > MAX_LENGTH {
 		errs = append(errs, widthErrMsg)
 	}
 
@@ -92,7 +100,7 @@ func validateWidthAndHeight(f FormData, bounds image.Rectangle) error {
 		calculatedHeight := int(math.Round(float64(*f.Width*imgHeight) / float64(imgWidth) / 2.0))
 		calculatedHeight = min(calculatedHeight, MAX_LENGTH)
 		f.Height = &calculatedHeight
-	} else if height < MIN_LENGTH || height > MAX_LENGTH {
+	} else if *f.Height < MIN_LENGTH || *f.Height > MAX_LENGTH {
 		errs = append(errs, heightErrMsg)
 	}
 
@@ -104,10 +112,9 @@ func validateWidthAndHeight(f FormData, bounds image.Rectangle) error {
 	return err
 }
 
-func validateStyle(f FormData) error {
-	style := *f.Style
-
+func validateStyle(f *FormData) error {
 	if f.Style != nil {
+		style := *f.Style
 		styles := []string{STYLE_NORMAL, STYLE_BRIGHTNESS}
 		if slices.Contains(styles, style) {
 			return fmt.Errorf("invalid style: must be one of the following: %s", strings.Join(styles, ", "))
@@ -118,6 +125,20 @@ func validateStyle(f FormData) error {
 	}
 
 	return nil
+}
+
+func getDither(style string) []DitherNode {
+	switch style {
+	case STYLE_NORMAL:
+		return []DitherNode{
+			{value: 7.0 / 16.0, RelativePosition: RelativePosition{Dx: 1, Dy: 0}},
+			{value: 3.0 / 16.0, RelativePosition: RelativePosition{Dx: -1, Dy: 1}},
+			{value: 5.0 / 16.0, RelativePosition: RelativePosition{Dx: 0, Dy: 1}},
+			{value: 1.0 / 16.0, RelativePosition: RelativePosition{Dx: 1, Dy: 1}},
+		}
+	default:
+		return nil
+	}
 }
 
 func getLinearizedChannel(colorChannel uint8) float64 {
@@ -198,7 +219,7 @@ func getFormData(c *gin.Context) (FormData, error) {
 	return form, nil
 }
 
-func validateFormData(form FormData, bounds image.Rectangle) error {
+func validateFormData(form *FormData, bounds image.Rectangle) error {
 	if err := validateBrightness(form); err != nil {
 		return err
 	}
@@ -236,31 +257,49 @@ func getGrayscaleMatrix(img image.Image, totalWidth, totalHeight int) [][]float6
 	return grayscale
 }
 
-func floydSteinbergDither(originalX, originalY int, quantError float64, grayscaleMatrix [][]float64) {
-	x, y := originalX+1, originalY
-	width, height := len(grayscaleMatrix[0]), len(grayscaleMatrix)
+func ditherMatrix(dither []DitherNode, x, y int, quantError float64, grayscaleMatrix [][]float64) {
+	width, height := len(grayscaleMatrix[y]), len(grayscaleMatrix)
 
-	if x < width {
-		grayscaleMatrix[y][x] = grayscaleMatrix[y][x] + quantError*(7.0/16.0)
+	compare := func(n, dn, length int) bool {
+		if dn < n {
+			return dn > 0
+		}
+		return dn < length
 	}
 
-	x, y = originalX-1, originalY+1
-	if y < height {
-		if x-1 >= 0 {
-			grayscaleMatrix[y][x] = grayscaleMatrix[y][x] + quantError*(3.0/16.0)
-		}
-
-		x = originalX
-		grayscaleMatrix[y][x] = grayscaleMatrix[y][x] + quantError*(5.0/16.0)
-
-		x = originalX + 1
-		if x < width {
-			grayscaleMatrix[y][x] = grayscaleMatrix[y][x] + quantError*(1.0/16.0)
+	for _, node := range dither {
+		dx, dy := x+node.RelativePosition.Dx, y+node.RelativePosition.Dy
+		if compare(x, dx, width) && compare(y, dy, height) {
+			grayscaleMatrix[dy][dx] = grayscaleMatrix[dy][dx] + quantError*node.value
 		}
 	}
 }
 
-func pixelsToAscii(baseX, baseY int, form FormData, grayscaleMatrix [][]float64) rune {
+// func floydSteinbergDither(originalX, originalY int, quantError float64, grayscaleMatrix [][]float64) {
+// 	x, y := originalX+1, originalY
+// 	width, height := len(grayscaleMatrix[0]), len(grayscaleMatrix)
+
+// 	if x < width {
+// 		grayscaleMatrix[y][x] = grayscaleMatrix[y][x] + quantError*(7.0/16.0)
+// 	}
+
+// 	x, y = originalX-1, originalY+1
+// 	if y < height {
+// 		if x >= 0 {
+// 			grayscaleMatrix[y][x] = grayscaleMatrix[y][x] + quantError*(3.0/16.0)
+// 		}
+
+// 		x = originalX
+// 		grayscaleMatrix[y][x] = grayscaleMatrix[y][x] + quantError*(5.0/16.0)
+
+// 		x = originalX + 1
+// 		if x < width {
+// 			grayscaleMatrix[y][x] = grayscaleMatrix[y][x] + quantError*(1.0/16.0)
+// 		}
+// 	}
+// }
+
+func pixelsToAscii(baseX, baseY int, form FormData, grayscaleMatrix [][]float64, dither []DitherNode) rune {
 	var offset uint8 = 0
 	transformedX, transformedY := baseX*CHAR_WIDTH, baseY*CHAR_HEIGHT
 	// style := getStyle(form)
@@ -278,7 +317,7 @@ func pixelsToAscii(baseX, baseY int, form FormData, grayscaleMatrix [][]float64)
 			} else {
 				quantError -= 1.0
 			}
-			floydSteinbergDither(x, y, quantError, grayscaleMatrix)
+			ditherMatrix(dither, x, y, quantError, grayscaleMatrix)
 		}
 	}
 
@@ -288,11 +327,12 @@ func pixelsToAscii(baseX, baseY int, form FormData, grayscaleMatrix [][]float64)
 func generateAscii2(img image.Image, form FormData) ([]string, int, error) {
 	ascii := []string{}
 	grayscaleMatrix := getGrayscaleMatrix(img, CHAR_WIDTH**form.Width, CHAR_HEIGHT**form.Height)
+	dither := getDither(*form.Style)
 
 	for y := 0; y < *form.Height; y++ {
 		var builder strings.Builder
 		for x := 0; x < *form.Width; x++ {
-			builder.WriteRune(pixelsToAscii(x, y, form, grayscaleMatrix))
+			builder.WriteRune(pixelsToAscii(x, y, form, grayscaleMatrix, dither))
 		}
 		ascii = append(ascii, builder.String())
 	}
@@ -493,7 +533,7 @@ func getAscii(c *gin.Context) {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	if err := validateFormData(form, image.Bounds()); err != nil {
+	if err := validateFormData(&form, image.Bounds()); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
