@@ -614,10 +614,6 @@ video {
   height: 100%;
 }
 
-.h-screen {
-  height: 100vh;
-}
-
 .w-0 {
   width: 0px;
 }
@@ -653,10 +649,6 @@ video {
 
 .w-full {
   width: 100%;
-}
-
-.max-w-screen-xl {
-  max-width: 1280px;
 }
 
 .max-w-screen-2xl {
@@ -697,10 +689,6 @@ video {
 
 .overflow-x-auto {
   overflow-x: auto;
-}
-
-.overflow-x-scroll {
-  overflow-x: scroll;
 }
 
 .text-ellipsis {
@@ -820,12 +808,17 @@ video {
   padding-bottom: 0.5rem;
 }
 
-.pt-96 {
-  padding-top: 24rem;
+.py-1 {
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
 }
 
 .pt-24 {
   padding-top: 6rem;
+}
+
+.pr-1 {
+  padding-right: 0.25rem;
 }
 
 .text-center {
@@ -848,11 +841,6 @@ video {
 .text-xs {
   font-size: 0.75rem;
   line-height: 1rem;
-}
-
-.text-sm {
-  font-size: 0.875rem;
-  line-height: 1.25rem;
 }
 
 .text-red-500 {

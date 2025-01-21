@@ -17,8 +17,9 @@ import (
 
 // styles
 const (
-	STYLE_NORMAL     = "normal"
-	STYLE_BRIGHTNESS = "brightness"
+	STYLE_NORMAL        = "normal"
+	STYLE_BRIGHTNESS    = "brightness"
+	STYLE_HIGH_CONTRAST = "contrast"
 )
 
 // defaults
@@ -115,8 +116,8 @@ func validateWidthAndHeight(f *FormData, bounds image.Rectangle) error {
 func validateStyle(f *FormData) error {
 	if f.Style != nil {
 		style := *f.Style
-		styles := []string{STYLE_NORMAL, STYLE_BRIGHTNESS}
-		if slices.Contains(styles, style) {
+		styles := []string{STYLE_NORMAL, STYLE_BRIGHTNESS, STYLE_HIGH_CONTRAST}
+		if !slices.Contains(styles, style) {
 			return fmt.Errorf("invalid style: must be one of the following: %s", strings.Join(styles, ", "))
 		}
 	} else {
@@ -136,9 +137,17 @@ func getDither(style string) []DitherNode {
 			{value: 5.0 / 16.0, RelativePosition: RelativePosition{Dx: 0, Dy: 1}},
 			{value: 1.0 / 16.0, RelativePosition: RelativePosition{Dx: 1, Dy: 1}},
 		}
-	default:
-		return nil
+	case STYLE_HIGH_CONTRAST:
+		return []DitherNode{
+			{value: 1.0 / 8.0, RelativePosition: RelativePosition{Dx: 1, Dy: 0}},
+			{value: 1.0 / 8.0, RelativePosition: RelativePosition{Dx: 2, Dy: 0}},
+			{value: 1.0 / 8.0, RelativePosition: RelativePosition{Dx: -1, Dy: 1}},
+			{value: 1.0 / 8.0, RelativePosition: RelativePosition{Dx: 0, Dy: 1}},
+			{value: 1.0 / 8.0, RelativePosition: RelativePosition{Dx: 1, Dy: 1}},
+			{value: 1.0 / 8.0, RelativePosition: RelativePosition{Dx: 0, Dy: 2}},
+		}
 	}
+	return []DitherNode{}
 }
 
 func getLinearizedChannel(colorChannel uint8) float64 {
@@ -275,30 +284,6 @@ func ditherMatrix(dither []DitherNode, x, y int, quantError float64, grayscaleMa
 	}
 }
 
-// func floydSteinbergDither(originalX, originalY int, quantError float64, grayscaleMatrix [][]float64) {
-// 	x, y := originalX+1, originalY
-// 	width, height := len(grayscaleMatrix[0]), len(grayscaleMatrix)
-
-// 	if x < width {
-// 		grayscaleMatrix[y][x] = grayscaleMatrix[y][x] + quantError*(7.0/16.0)
-// 	}
-
-// 	x, y = originalX-1, originalY+1
-// 	if y < height {
-// 		if x >= 0 {
-// 			grayscaleMatrix[y][x] = grayscaleMatrix[y][x] + quantError*(3.0/16.0)
-// 		}
-
-// 		x = originalX
-// 		grayscaleMatrix[y][x] = grayscaleMatrix[y][x] + quantError*(5.0/16.0)
-
-// 		x = originalX + 1
-// 		if x < width {
-// 			grayscaleMatrix[y][x] = grayscaleMatrix[y][x] + quantError*(1.0/16.0)
-// 		}
-// 	}
-// }
-
 func pixelsToAscii(baseX, baseY int, form FormData, grayscaleMatrix [][]float64, dither []DitherNode) rune {
 	var offset uint8 = 0
 	transformedX, transformedY := baseX*CHAR_WIDTH, baseY*CHAR_HEIGHT
@@ -324,7 +309,7 @@ func pixelsToAscii(baseX, baseY int, form FormData, grayscaleMatrix [][]float64,
 	return rune(0x2800 + int(offset))
 }
 
-func generateAscii2(img image.Image, form FormData) ([]string, int, error) {
+func generateAscii(img image.Image, form FormData) ([]string, int, error) {
 	ascii := []string{}
 	grayscaleMatrix := getGrayscaleMatrix(img, CHAR_WIDTH**form.Width, CHAR_HEIGHT**form.Height)
 	dither := getDither(*form.Style)
@@ -539,7 +524,7 @@ func getAscii(c *gin.Context) {
 	}
 
 	// attempt to generate ascii
-	ascii, code, err := generateAscii2(image, form)
+	ascii, code, err := generateAscii(image, form)
 	if code != http.StatusOK || err != nil {
 		c.IndentedJSON(code, gin.H{"error": err.Error()})
 	} else {
