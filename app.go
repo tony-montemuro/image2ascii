@@ -70,6 +70,24 @@ type DitherNode struct {
 	value            float64
 }
 
+type EncodingSettings struct {
+	UsePercievedBrightness bool
+	DitherNodes            []DitherNode
+}
+
+type Point struct {
+	X int
+	Y int
+}
+
+func getStyles() []string {
+	return []string{STYLE_NORMAL, STYLE_BRIGHTNESS, STYLE_HIGH_CONTRAST}
+}
+
+func getInvalidStylesError() error {
+	return fmt.Errorf("invalid style: must be one of the following: %s", strings.Join(getStyles(), ", "))
+}
+
 func validateBrightness(f *FormData) error {
 	if f.Brightness != nil {
 		brightness := *f.Brightness
@@ -116,9 +134,8 @@ func validateWidthAndHeight(f *FormData, bounds image.Rectangle) error {
 func validateStyle(f *FormData) error {
 	if f.Style != nil {
 		style := *f.Style
-		styles := []string{STYLE_NORMAL, STYLE_BRIGHTNESS, STYLE_HIGH_CONTRAST}
-		if !slices.Contains(styles, style) {
-			return fmt.Errorf("invalid style: must be one of the following: %s", strings.Join(styles, ", "))
+		if !slices.Contains(getStyles(), style) {
+			return getInvalidStylesError()
 		}
 	} else {
 		defaultVal := DEFAULT_STYLE
@@ -148,6 +165,34 @@ func getDither(style string) []DitherNode {
 		}
 	}
 	return []DitherNode{}
+}
+
+func getEncodingSettings(style string) (EncodingSettings, error) {
+	var encodingSettings EncodingSettings
+	err := getInvalidStylesError()
+
+	switch style {
+	case STYLE_NORMAL:
+		encodingSettings = EncodingSettings{
+			DitherNodes:            getDither(style),
+			UsePercievedBrightness: false,
+		}
+		err = nil
+	case STYLE_HIGH_CONTRAST:
+		encodingSettings = EncodingSettings{
+			DitherNodes:            getDither(style),
+			UsePercievedBrightness: false,
+		}
+		err = nil
+	case STYLE_BRIGHTNESS:
+		encodingSettings = EncodingSettings{
+			DitherNodes:            getDither(style),
+			UsePercievedBrightness: true,
+		}
+		err = nil
+	}
+
+	return encodingSettings, err
 }
 
 func getLinearizedChannel(colorChannel uint8) float64 {
@@ -266,9 +311,7 @@ func getGrayscaleMatrix(img image.Image, totalWidth, totalHeight int) [][]float6
 	return grayscale
 }
 
-func ditherMatrix(dither []DitherNode, x, y int, quantError float64, grayscaleMatrix [][]float64) {
-	width, height := len(grayscaleMatrix[y]), len(grayscaleMatrix)
-
+func ditherMatrix(dither []DitherNode, grayscaleMatrix [][]float64, point Point, quantError float64) {
 	compare := func(n, dn, length int) bool {
 		if dn < n {
 			return dn > 0
@@ -276,48 +319,57 @@ func ditherMatrix(dither []DitherNode, x, y int, quantError float64, grayscaleMa
 		return dn < length
 	}
 
+	width, height := len(grayscaleMatrix[point.Y]), len(grayscaleMatrix)
 	for _, node := range dither {
-		dx, dy := x+node.RelativePosition.Dx, y+node.RelativePosition.Dy
-		if compare(x, dx, width) && compare(y, dy, height) {
+		dx, dy := point.X+node.RelativePosition.Dx, point.Y+node.RelativePosition.Dy
+		if compare(point.X, dx, width) && compare(point.Y, dy, height) {
 			grayscaleMatrix[dy][dx] = grayscaleMatrix[dy][dx] + quantError*node.value
 		}
 	}
 }
 
-func pixelsToAscii(baseX, baseY int, form FormData, grayscaleMatrix [][]float64, dither []DitherNode) rune {
+func getMaxBrightness(brightness float64, usePercievedBrightness bool) float64 {
+	if usePercievedBrightness {
+		return brightness
+	}
+	return brightness / 100.0
+}
+
+func pixelsToAscii(point Point, form FormData, grayscaleMatrix [][]float64, encodingSettings EncodingSettings) rune {
 	var offset uint8 = 0
-	transformedX, transformedY := baseX*CHAR_WIDTH, baseY*CHAR_HEIGHT
-	// style := getStyle(form)
-	// isInverted := form.IsInvert.Bool()
+	transformedX, transformedY := point.X*CHAR_WIDTH, point.Y*CHAR_HEIGHT
+	maxBrightness := getMaxBrightness(*form.Brightness, encodingSettings.UsePercievedBrightness)
 
 	for dy := 0; dy < int(CHAR_HEIGHT); dy++ {
 		for dx := 0; dx < int(CHAR_WIDTH); dx++ {
 			x, y := transformedX+dx, transformedY+dy
-			// fmt.Println(len(grayscaleMatrix), len(grayscaleMatrix[0]), baseX, baseY, transformedX, transformedY, x, y)
-			luminance := grayscaleMatrix[y][x]
-			quantError := luminance
-			// brightness := getPercievedBrightness(luminance)
-			if luminance < float64(*form.Brightness)/100 {
+			brightness := grayscaleMatrix[y][x]
+			if encodingSettings.UsePercievedBrightness {
+				brightness = getPercievedBrightness(brightness)
+			}
+
+			quantError := brightness
+			if brightness < maxBrightness {
 				offset |= (1 << getPixelNumber(dx, dy))
 			} else {
 				quantError -= 1.0
 			}
-			ditherMatrix(dither, x, y, quantError, grayscaleMatrix)
+
+			ditherMatrix(encodingSettings.DitherNodes, grayscaleMatrix, Point{X: x, Y: y}, quantError)
 		}
 	}
 
 	return rune(0x2800 + int(offset))
 }
 
-func generateAscii(img image.Image, form FormData) ([]string, int, error) {
+func generateAscii(img image.Image, form FormData, encodingSettings EncodingSettings) ([]string, int, error) {
 	ascii := []string{}
 	grayscaleMatrix := getGrayscaleMatrix(img, CHAR_WIDTH**form.Width, CHAR_HEIGHT**form.Height)
-	dither := getDither(*form.Style)
 
 	for y := 0; y < *form.Height; y++ {
 		var builder strings.Builder
 		for x := 0; x < *form.Width; x++ {
-			builder.WriteRune(pixelsToAscii(x, y, form, grayscaleMatrix, dither))
+			builder.WriteRune(pixelsToAscii(Point{X: x, Y: y}, form, grayscaleMatrix, encodingSettings))
 		}
 		ascii = append(ascii, builder.String())
 	}
@@ -523,8 +575,14 @@ func getAscii(c *gin.Context) {
 		return
 	}
 
+	// determine encoding settings
+	encodingSettings, err := getEncodingSettings(*form.Style)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	}
+
 	// attempt to generate ascii
-	ascii, code, err := generateAscii(image, form)
+	ascii, code, err := generateAscii(image, form, encodingSettings)
 	if code != http.StatusOK || err != nil {
 		c.IndentedJSON(code, gin.H{"error": err.Error()})
 	} else {
