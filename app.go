@@ -20,6 +20,7 @@ const (
 	STYLE_NORMAL        = "normal"
 	STYLE_BRIGHTNESS    = "brightness"
 	STYLE_HIGH_CONTRAST = "contrast"
+	STYLE_EDGE_CONTRAST = "edge"
 )
 
 // defaults
@@ -81,7 +82,7 @@ type Point struct {
 }
 
 func getStyles() []string {
-	return []string{STYLE_NORMAL, STYLE_BRIGHTNESS, STYLE_HIGH_CONTRAST}
+	return []string{STYLE_NORMAL, STYLE_BRIGHTNESS, STYLE_HIGH_CONTRAST, STYLE_EDGE_CONTRAST}
 }
 
 func getInvalidStylesError() error {
@@ -163,6 +164,12 @@ func getDither(style string) []DitherNode {
 			{value: 1.0 / 8.0, RelativePosition: RelativePosition{Dx: 1, Dy: 1}},
 			{value: 1.0 / 8.0, RelativePosition: RelativePosition{Dx: 0, Dy: 2}},
 		}
+	case STYLE_EDGE_CONTRAST:
+		return []DitherNode{
+			{value: 2.0 / 4.0, RelativePosition: RelativePosition{Dx: 1, Dy: 0}},
+			{value: 1.0 / 4.0, RelativePosition: RelativePosition{Dx: -1, Dy: 1}},
+			{value: 1.0 / 4.0, RelativePosition: RelativePosition{Dx: 0, Dy: 1}},
+		}
 	}
 	return []DitherNode{}
 }
@@ -188,6 +195,12 @@ func getEncodingSettings(style string) (EncodingSettings, error) {
 		encodingSettings = EncodingSettings{
 			DitherNodes:            getDither(style),
 			UsePercievedBrightness: true,
+		}
+		err = nil
+	case STYLE_EDGE_CONTRAST:
+		encodingSettings = EncodingSettings{
+			DitherNodes:            getDither(style),
+			UsePercievedBrightness: false,
 		}
 		err = nil
 	}
