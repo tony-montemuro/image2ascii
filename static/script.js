@@ -16,8 +16,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const thumbnailName = this.getElementById('thumbnail-name');
     const sizeContainer = this.getElementById('size');
     const output = this.getElementById('output');
+    const copySuccess = this.getElementById("output-copy-success");
+    const copyError = this.getElementById("output-copy-failure");
+    const outputContainer = this.getElementById("output-wrapper");
     const sizeRadios = sizeContainer.querySelectorAll('input[name="size"]');
-    const sizeRadioLabels = sizeContainer.getElementsByTagName('label');
+    const sizeRadioLabels = sizeContainer.getElementsByTagName('label'); 
 
     /* ===== VARIABLES ===== */
     const size = {
@@ -123,9 +126,6 @@ document.addEventListener('DOMContentLoaded', function() {
         heightInput.value = size[type].height;
     };
 
-    function renderOutput() {
-        show(output);
-    }
 
     /* ===== EVENT LISTENERS ===== */
 
@@ -222,14 +222,37 @@ document.addEventListener('DOMContentLoaded', function() {
             data.forEach(row => {
                 output.textContent += row + "\n";
             });
-            renderOutput();
+            show(outputContainer);
 
-            data.forEach(row => {
-                console.log(row.length);
-            });
-            console.log(data);
         } catch(error) {
             addErrorMessage(error.message);
+        }
+    });
+
+    // Output
+    let timeout;
+    output.addEventListener('click', async event => {
+        clearTimeout(timeout);
+
+        const element = event.target;
+        const text = element.textContent;
+        const type = "text/plain";
+        const blob = new Blob([text], {type});
+        const data = [new ClipboardItem({[type]: blob})];
+
+        try {
+            await navigator.clipboard.write(data);
+            show(copySuccess);
+
+            timeout = setTimeout(function() {
+                hide(copySuccess);
+            }, 2500);
+        } catch (error) {
+            show(copyError);
+
+            timeout = setTimeout(function() {
+                hide(copyError);
+            }, 2500);
         }
     });
 });

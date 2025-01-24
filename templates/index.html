@@ -244,8 +244,8 @@
                   >
                     <option value="normal" selected>Normal</option>
                     <option value="contrast">High Contrast</option>
-                    <option value="brightness">Brightness</option>
                     <option value="edge">Edge Contrast</option>
+                    <option value="brightness">Brightness</option>
                   </select>
                 </div>
               </div>
@@ -280,7 +280,19 @@
       </form>
 
       <!-- Output -->
-      <div id="output" class="border rounded p-2 font-mono whitespace-pre-wrap w-fit max-w-screen-2xl overflow-x-auto text-xs sr-only"></div>
+      <div id="output-wrapper" class="relative sr-only">
+        <div id="output" class="relative border rounded p-2 font-mono whitespace-pre-wrap w-fit max-w-screen-2xl overflow-x-auto text-xs cursor-pointer"></div>
+        <div id="output-copy-success" class="absolute inset-0 bg-green-100/50 sr-only flex items-center justify-center cursor-pointer">
+          <span class="p-2 bg-gray-200/80 rounded cursor-pointer">
+            Copied to Clipboard!
+          </span>
+        </div>
+        <div id="output-copy-failure" class="absolute inset-0 bg-red-100/50 sr-only flex items-center justify-center cursor-pointer">
+          <span class="p-2 bg-gray-200/80 rounded cursor-pointer">
+            Error Copying Output
+          </span>
+        </div>
+      </div>
     </div>
   </body>
 </html>
