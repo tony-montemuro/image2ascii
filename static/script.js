@@ -57,6 +57,16 @@ document.addEventListener('DOMContentLoaded', function() {
         element.classList.add('sr-only');
     }
 
+    function popIn(element) {
+        show(element);
+        element.classList.add("animate-popin");
+    }
+
+    function popOut(element) {
+        hide(element);
+        element.classList.remove("animate-popin");
+    }
+
     function addErrorMessage(message) {
         show(error);
         error.textContent = message;
@@ -242,17 +252,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
         try {
             await navigator.clipboard.write(data);
-            show(copySuccess);
-
-            timeout = setTimeout(function() {
-                hide(copySuccess);
-            }, 2500);
+            popIn(copySuccess);
+            timeout = setTimeout(() => popOut(copySuccess), 1500);
         } catch (error) {
-            show(copyError);
-
-            timeout = setTimeout(function() {
-                hide(copyError);
-            }, 2500);
+            popIn(copyError);
+            timeout = setTimeout(() => popOut(copyError), 1500);
         }
     });
 });
