@@ -19,6 +19,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const copySuccess = this.getElementById("output-copy-success");
     const copyError = this.getElementById("output-copy-failure");
     const outputContainer = this.getElementById("output-wrapper");
+    const submitBtn = this.getElementById("submit");
+    const submitBtnText = this.getElementById("submit-btn-text");
+    const submitBtnSpinner = this.getElementById("submit-btn-spinner");
     const sizeRadios = sizeContainer.querySelectorAll('input[name="size"]');
     const sizeRadioLabels = sizeContainer.getElementsByTagName('label'); 
 
@@ -136,6 +139,25 @@ document.addEventListener('DOMContentLoaded', function() {
         heightInput.value = size[type].height;
     };
 
+    function setSubmitting(isSubmitting) {
+        const submittingClasses = ['cursor-not-allowed', 'bg-blue-500/90'];
+        const normalClasses = ['hover:bg-blue-500/90'];
+
+        if (isSubmitting) {
+            hide(submitBtnText);
+            show(submitBtnSpinner);
+            submitBtn.disabled = true;
+            submitBtn.classList.add(...submittingClasses);
+            submitBtn.classList.remove(...normalClasses);
+        } else {
+            hide(submitBtnSpinner);
+            show(submitBtnText);
+            submitBtn.removeAttribute("disabled");
+            submitBtn.classList.remove(...submittingClasses);
+            submitBtn.classList.add(...normalClasses);
+        }
+    }
+
 
     /* ===== EVENT LISTENERS ===== */
 
@@ -217,6 +239,7 @@ document.addEventListener('DOMContentLoaded', function() {
         formData.delete('size');
 
         try {
+            setSubmitting(true);
             let response = await fetch(action, {
                 method,
                 body: formData
@@ -236,6 +259,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
         } catch(error) {
             addErrorMessage(error.message);
+        } finally {
+            setSubmitting(false);
         }
     });
 

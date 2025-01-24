@@ -594,6 +594,11 @@ video {
   display: inline-flex;
 }
 
+.size-5 {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
 .h-0 {
   height: 0px;
 }
@@ -620,6 +625,14 @@ video {
 
 .h-full {
   height: 100%;
+}
+
+.h-24 {
+  height: 6rem;
+}
+
+.min-h-\[42px\] {
+  min-height: 42px;
 }
 
 .w-0 {
@@ -679,8 +692,22 @@ video {
   animation: popin 0.1s;
 }
 
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
 .cursor-pointer {
   cursor: pointer;
+}
+
+.cursor-not-allowed {
+  cursor: not-allowed;
 }
 
 .flex-row {
@@ -821,6 +848,14 @@ video {
   background-color: rgb(156 163 175 / 0.8);
 }
 
+.bg-blue-500\/90 {
+  background-color: rgb(59 130 246 / 0.9);
+}
+
+.fill-white {
+  fill: #fff;
+}
+
 .object-contain {
   -o-object-fit: contain;
      object-fit: contain;
@@ -881,6 +916,10 @@ video {
 .text-xs {
   font-size: 0.75rem;
   line-height: 1rem;
+}
+
+.leading-none {
+  line-height: 1;
 }
 
 .text-red-500 {
