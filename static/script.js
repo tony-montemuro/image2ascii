@@ -360,10 +360,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    function outputKeydownAction(event) {
-        
-    }
-
     /**
      * Handles when popout animation ends on output overlay.
      * 
