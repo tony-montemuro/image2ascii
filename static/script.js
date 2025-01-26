@@ -54,24 +54,48 @@ document.addEventListener('DOMContentLoaded', function() {
     let clipboardModalTimeout;
 
     /* ===== FUNCTIONS ===== */
+
+    /**
+     * Makes an element visible
+     * 
+     * @param {HTMLElement} element
+     */
     function show(element) {
         element.classList.remove('sr-only');
     }
 
+    /**
+     * Hides an element
+     * 
+     * @param {HTMLElement} element
+     */
     function hide(element) {
         element.classList.add('sr-only');
     }
 
+    /**
+     * Renders an error message to the user
+     * 
+     * @param {string} message - An error message.
+     */
     function addErrorMessage(message) {
         show(error);
         error.textContent = message;
     };
 
+    /**
+     * Removes error message
+     */
     function removeErrorMessage() {
         hide(error);
         error.textContent = '';
     }
 
+    /**
+     * Hides user options in the event of an error, which is described by `message`
+     * 
+     * @param {string} message - An error message.
+     */
     function hideOptions(message) {
         thumbnail.src = '';
         thumbnail.alt = '';
@@ -81,17 +105,30 @@ document.addEventListener('DOMContentLoaded', function() {
 
         imageInput.value = '';
         hide(imageOptions);
-        addErrorMessage(message);
+
+        if (message) {
+            addErrorMessage(message);
+        }
     }
 
+    /**
+     * Update the width and height based on `type`
+     * 
+     * @param {string} type - Must correspond to a key within 'size'.
+     */
     function updateWidthAndHeight(type) {
         widthInput.value = size[type].width;
         heightInput.value = size[type].height;
     };
 
+    /**
+     * Render options to user
+     * 
+     * @param {Image} image - The user-uploade image.
+     */
     function displayOptions(image) {
         thumbnail.src = image.src;
-        thumbnail.alt = 'Your image';
+        thumbnail.alt = image.name;
         thumbnailName.textContent = image.name;
         show(thumbnailWrapper);
         hide(imagePlaceholder);
@@ -103,18 +140,26 @@ document.addEventListener('DOMContentLoaded', function() {
         updateWidthAndHeight(sizeContainer.querySelector('input:checked').value);
     };
 
+
+    /**
+     * Determine height of ascii
+     * 
+     * @param {number} imageWidth - The width of the original image.
+     * @param {number} imageHeight - The height of the original image.
+     * @param {string} type - Must correspond to a key within 'size'.
+     * @returns {number} The new height.
+     */
     function getHeight(imageWidth, imageHeight, type) {
         const maxHeight = size[type].maxHeight ?? Number.MAX_SAFE_INTEGER;
         const calculatedHeight = Math.round((size[type].width * imageHeight) / imageWidth / 2);
         return Math.min(calculatedHeight, maxHeight);
     }
 
-    function checkImage(image) {
-        const imageWidth = image.width, imageHeight = image.height;
-        Object.keys(size).forEach(type => size[type].height = getHeight(imageWidth, imageHeight, type));
-        displayOptions(image);
-    };
-
+    /**
+     * Validates image, and builds it out.
+     * 
+     * @param {FileList} files The file(s) uploaded by the user. Only first image is handled.
+     */
     function handleNewImage(files) {
         const img = files[0];
         const validTypes = ['image/jpeg', 'image/png'];
@@ -123,14 +168,20 @@ document.addEventListener('DOMContentLoaded', function() {
             const image = new Image();
             image.src = URL.createObjectURL(img);
             image.onload = function() {
-                image.setAttribute('name', img.name);
-                checkImage(this);
+                this.setAttribute('name', img.name);
+                Object.keys(size).forEach(type => size[type].height = getHeight(this.width, this.height, type));
+                displayOptions(this);
             }
         } else {
             hideOptions('File type not supported. Please upload a JPEG or PNG file.');
         }
     };
 
+    /**
+     * Toggle form in "submitting" state
+     * 
+     * @param {boolean} isSubmitting Flag that controls whether or not we are in "submitting" state.
+     */
     function setSubmitting(isSubmitting) {
         const submittingClasses = ['cursor-not-allowed', 'bg-blue-500/90'];
         const normalClasses = ['hover:bg-blue-500/90'];
@@ -150,8 +201,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // actions
-
+    /**
+     * Fetch ascii output from backend
+     * 
+     * @param {HTMLFormElement} form Form element with user selections.
+     */
     async function getOutput(form) {
         const action = form.action;
         const method = form.method;
@@ -176,6 +230,13 @@ document.addEventListener('DOMContentLoaded', function() {
         show(outputContainer);
     }
 
+    // actions
+
+    /**
+     * Uploads files when dropped into upload button.
+     * 
+     * @param {DragEvent} event Triggers on drop.
+     */
     function uploadBtnDropAction(event) {
         event.preventDefault();
         
@@ -188,15 +249,28 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    /**
+     * Handle new image on upload.
+     * 
+     * @param {Event} event Triggers on change.
+     */
     function imageInputChangeAction(event) {
         const input = event.target;
         const files = input.files;
 
-        if (files.length > 0) {
-            handleNewImage(files);
+        if (files.length === 0) {
+            hideOptions('No image selected.');
+            return;
         }
+
+        handleNewImage(files);
     }
 
+    /**
+     * Handles when user clicks size radio.
+     * 
+     * @param {MouseEvent} event Triggers on click. 
+     */
     function sizeRadioClickAction(event) {
         const changeUsability = enabling => {
             for (const input of widthAndHeightInputs) {
@@ -219,6 +293,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    /**
+     * Handles when user wants to select a size radio using keyboard (spacebar).
+     * 
+     * @param {KeyboardEvent} event Triggers on keydown when selecting a size radio. 
+     */
     function sizeRadioLabelKeydownAction(event) {
         if (event.key === " ") {
             event.preventDefault();
@@ -227,13 +306,18 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    /**
+     * Handles when user submits form.
+     * 
+     * @param {SubmitEvent} event Triggers on form submit.
+     */
     async function formSubmitAction(event) {
         event.preventDefault();
         const form = event.target;
 
         setSubmitting(true);
         try {
-            getOutput(form);
+            await getOutput(form);
         } catch(error) {
             addErrorMessage(error.message);
         } finally {
@@ -241,6 +325,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    /**
+     * Handles when user clicks output to add to clipboard.
+     * 
+     * @param {MouseEvent} event Triggers on click.
+     */
     async function outputClickAction(event) {
         const popIn = element => {
             show(element);
@@ -270,7 +359,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    function outputAnimationEndAction(event) {
+    /**
+     * Handles when popout animation ends on output overlay.
+     * 
+     * @param {AnimationEvent} event Triggers on animationend.
+     */
+    function outputOverlayAnimationEndAction(event) {
         const element = event.target;
 
         if (event.animationName === 'popout') {
@@ -308,6 +402,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Output events
     output.addEventListener('click', event => outputClickAction(event));
-    copySuccess.addEventListener('animationend', event => outputAnimationEndAction(event));
-    copyError.addEventListener('animationend', event => outputAnimationEndAction(event));
+    copySuccess.addEventListener('animationend', event => outputOverlayAnimationEndAction(event));
+    copyError.addEventListener('animationend', event => outputOverlayAnimationEndAction(event));
 });
