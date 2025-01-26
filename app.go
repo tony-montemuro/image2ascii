@@ -42,7 +42,7 @@ const (
 	MIN_EXPOSURE = 0.0
 	MAX_EXPOSURE = 100.0
 	MIN_LENGTH   = 1
-	MAX_LENGTH   = 1000
+	MAX_LENGTH   = 500
 )
 
 type CheckboxBool string

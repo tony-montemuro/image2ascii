@@ -38,15 +38,15 @@ document.addEventListener('DOMContentLoaded', function() {
             maxHeight: 62
         },
         small: {
-            width: 20,
+            width: 30,
             height: undefined
         },
         medium: {
-            width: 50,
+            width: 90,
             height: undefined
         },
         large: {
-            width: 100,
+            width: 150,
             height: undefined
         }
     };
