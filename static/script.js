@@ -6,8 +6,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const customSize = this.getElementById('custom-size');
     const widthInput = this.getElementById('width');
     const heightInput = this.getElementById('height');
-    const brightness = this.getElementById('brightness');
-    const brightnessValue = this.getElementById('brightness-value');
+    const exposure = this.getElementById('exposure');
+    const exposureValue = this.getElementById('exposure-value');
     const uploadBtn = this.getElementById('upload');
     const error = this.getElementById('error');
     const imagePlaceholder = this.getElementById('img-placeholder');
@@ -220,12 +220,12 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Brightness input
-    brightness.addEventListener('input', event => {
-        brightnessValue.value = event.target.value;
+    // Exposure input
+    exposure.addEventListener('input', event => {
+        exposureValue.value = event.target.value;
     });
-    brightnessValue.addEventListener('change', event => {
-        brightness.value = event.target.value;
+    exposureValue.addEventListener('change', event => {
+        exposure.value = event.target.value;
     });
 
     // Form submission

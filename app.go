@@ -25,10 +25,10 @@ const (
 
 // defaults
 const (
-	DEFAULT_BRIGHTNESS = 50.0
-	DEFAULT_INVERTED   = false
-	DEFAULT_STYLE      = STYLE_NORMAL
-	DEFAULT_WIDTH      = 50
+	DEFAULT_EXPOSURE = 50.0
+	DEFAULT_INVERTED = false
+	DEFAULT_STYLE    = STYLE_NORMAL
+	DEFAULT_WIDTH    = 50
 )
 
 // ascii properties
@@ -39,13 +39,11 @@ const (
 
 // limits
 const (
-	MIN_BRIGHTNESS = 0.0
-	MAX_BRIGHTNESS = 100.0
-	MIN_LENGTH     = 1
-	MAX_LENGTH     = 1000
+	MIN_EXPOSURE = 0.0
+	MAX_EXPOSURE = 100.0
+	MIN_LENGTH   = 1
+	MAX_LENGTH   = 1000
 )
-
-type BrightnessComparisonFunc func(a, target float64) bool
 
 type CheckboxBool string
 
@@ -54,11 +52,11 @@ func (cb CheckboxBool) Bool() bool {
 }
 
 type FormData struct {
-	Width      *int         `form:"width"`
-	Height     *int         `form:"height"`
-	IsInvert   CheckboxBool `form:"invert"`
-	Brightness *float64     `form:"brightness"`
-	Style      *string      `form:"style"`
+	Width    *int         `form:"width"`
+	Height   *int         `form:"height"`
+	IsInvert CheckboxBool `form:"invert"`
+	Exposure *float64     `form:"exposure"`
+	Style    *string      `form:"style"`
 }
 
 type RelativePosition struct {
@@ -89,15 +87,19 @@ func getInvalidStylesError() error {
 	return fmt.Errorf("invalid style: must be one of the following: %s", strings.Join(getStyles(), ", "))
 }
 
-func validateBrightness(f *FormData) error {
-	if f.Brightness != nil {
-		brightness := *f.Brightness
-		if brightness < MIN_BRIGHTNESS || brightness > MAX_BRIGHTNESS {
-			return fmt.Errorf("invalid brightness: must be a number between %f & %f", MIN_BRIGHTNESS, MAX_BRIGHTNESS)
+func validateExposure(f *FormData) error {
+	if f.Exposure != nil {
+		exposure := *f.Exposure
+
+		if exposure < MIN_EXPOSURE || exposure > MAX_EXPOSURE {
+			return fmt.Errorf("invalid exposure: must be a number between %f & %f", MIN_EXPOSURE, MAX_EXPOSURE)
 		}
+
+		reversedExposure := MAX_EXPOSURE - exposure
+		f.Exposure = &reversedExposure
 	} else {
-		defaultBrightness := DEFAULT_BRIGHTNESS
-		f.Brightness = &defaultBrightness
+		defaultExposure := DEFAULT_EXPOSURE
+		f.Exposure = &defaultExposure
 	}
 
 	return nil
@@ -280,7 +282,7 @@ func getFormData(c *gin.Context) (FormData, error) {
 }
 
 func validateFormData(form *FormData, bounds image.Rectangle) error {
-	if err := validateBrightness(form); err != nil {
+	if err := validateExposure(form); err != nil {
 		return err
 	}
 
@@ -334,28 +336,28 @@ func ditherMatrix(dither []DitherNode, grayscaleMatrix [][]float64, point Point,
 	}
 }
 
-func getMaxBrightness(brightness float64, usePercievedBrightness bool) float64 {
+func getMaxExposure(exposure float64, usePercievedBrightness bool) float64 {
 	if usePercievedBrightness {
-		return brightness
+		return exposure
 	}
-	return brightness / 100.0
+	return exposure / 100.0
 }
 
 func pixelsToAscii(point Point, form FormData, grayscaleMatrix [][]float64, encodingSettings EncodingSettings) rune {
 	var offset uint8 = 0
 	transformedX, transformedY := point.X*CHAR_WIDTH, point.Y*CHAR_HEIGHT
-	maxBrightness := getMaxBrightness(*form.Brightness, encodingSettings.UsePercievedBrightness)
+	maxExposure := getMaxExposure(*form.Exposure, encodingSettings.UsePercievedBrightness)
 
 	for dy := 0; dy < int(CHAR_HEIGHT); dy++ {
 		for dx := 0; dx < int(CHAR_WIDTH); dx++ {
 			x, y := transformedX+dx, transformedY+dy
-			brightness := grayscaleMatrix[y][x]
+			exposure := grayscaleMatrix[y][x]
 			if encodingSettings.UsePercievedBrightness {
-				brightness = getPercievedBrightness(brightness)
+				exposure = getPercievedBrightness(exposure)
 			}
 
-			quantError := brightness
-			if brightness < maxBrightness {
+			quantError := exposure
+			if exposure < maxExposure {
 				offset |= (1 << getPixelNumber(dx, dy))
 			} else {
 				quantError -= 1.0
