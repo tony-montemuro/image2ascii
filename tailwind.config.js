@@ -4,7 +4,8 @@ module.exports = {
   theme: {
     extend: {
       animation: {
-        popin: "popin 0.1s"
+        popin: "popin 0.1s",
+        popout: "popout 0.1s"
       },
       colors: {
         twitch: {
@@ -21,6 +22,10 @@ module.exports = {
         popin: {
           "0%": {opacity: 0, transform: "scale(0.1)"},
           "100%": {opacity: 1, transform: "scale(1)"}
+        },
+        popout: {
+          "0%": {opacity: 1, transform: "scale(1)"},
+          "100%": {opacity: 0, transform: "scale(0.1)"}
         }
       }
     },
