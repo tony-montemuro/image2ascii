@@ -228,6 +228,7 @@ document.addEventListener('DOMContentLoaded', function() {
             output.textContent += row + "\n";
         });
         show(outputContainer);
+        outputContainer.tabIndex = "0";
     }
 
     // actions
@@ -359,6 +360,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    function outputKeydownAction(event) {
+        
+    }
+
     /**
      * Handles when popout animation ends on output overlay.
      * 
@@ -402,6 +407,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Output events
     output.addEventListener('click', event => outputClickAction(event));
+    outputContainer.addEventListener('keydown', event => ["Enter", " "].includes(event.key) ? output.click() : null);
     copySuccess.addEventListener('animationend', event => outputOverlayAnimationEndAction(event));
     copyError.addEventListener('animationend', event => outputOverlayAnimationEndAction(event));
 });
