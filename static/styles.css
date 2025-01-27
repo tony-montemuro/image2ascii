@@ -692,16 +692,6 @@ video {
   animation: popin 0.1s;
 }
 
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.animate-spin {
-  animation: spin 1s linear infinite;
-}
-
 @keyframes popout {
   0% {
     opacity: 1;
@@ -716,6 +706,16 @@ video {
 
 .animate-popout {
   animation: popout 0.1s;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
 }
 
 .cursor-not-allowed {
