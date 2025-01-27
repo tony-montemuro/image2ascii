@@ -224,9 +224,18 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         removeErrorMessage();
-        data.forEach(row => {
-            output.textContent += row + "\n";
+
+        output.replaceChildren();
+        data.forEach(asciiRow => {
+            const row = document.createElement("tr");
+            for (c of asciiRow) {
+                const cell = document.createElement("td");
+                cell.textContent = c;
+                row.appendChild(cell);
+            }
+            output.appendChild(row);
         });
+
         show(outputContainer);
         outputContainer.tabIndex = "0";
     }
@@ -327,6 +336,22 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     /**
+     * Grab all the text from the output table, and place into a string.
+     * 
+     * @returns {string}
+     */
+    function getOutputText() {
+        const rows = output.getElementsByTagName('tr');
+
+        const textRows = Array.from(rows).map(row => {
+            const cells = row.getElementsByTagName('td');
+            return Array.from(cells).map(cell => cell.textContent).join("");
+        });
+
+        return textRows.join("\n");
+    }
+
+    /**
      * Handles when user clicks output to add to clipboard.
      * 
      * @param {MouseEvent} event Triggers on click.
@@ -344,8 +369,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         clearTimeout(clipboardModalTimeout);
 
-        const element = event.target;
-        const text = element.textContent;
+        const text = getOutputText();
         const type = "text/plain";
         const blob = new Blob([text], {type});
         const data = [new ClipboardItem({[type]: blob})];
