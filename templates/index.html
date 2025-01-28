@@ -72,7 +72,6 @@
                     name="size" 
                     value="small" 
                     class="peer absolute opacity-0 w-0 h-0"
-                    checked
                   >
                   <label 
                     for="small" 
@@ -91,6 +90,7 @@
                     name="size" 
                     value="medium" 
                     class="peer absolute opacity-0 w-0 h-0"
+                    checked
                   >
                   <label 
                     for="medium" 
@@ -176,32 +176,49 @@
               </div>
 
               <!-- Width & Height (only shown if user selects "custom" radio) -->
-              <div id="custom-size" class="flex gap-2">
-                <div class="flex gap-1 items-center">
-                  <label for="width">Width</label>
-                  <input
-                    type="number"
-                    id="width"
-                    name="width"
-                    min="1"
-                    max="500"
-                    step="1"
-                    class="bg-gray-100 outline-none border rounded p-1"
-                    readonly
-                  />
+              <div id="custom-size" class="flex flex-col">
+                <div class="flex gap-2">
+                  <div class="flex gap-1 items-center">
+                    <label for="width">Width</label>
+                    <input
+                      type="number"
+                      id="width"
+                      name="width"
+                      min="1"
+                      max="500"
+                      step="1"
+                      class="bg-gray-100 outline-none border rounded p-1"
+                      readonly
+                    />
+                  </div>
+                  <div class="flex gap-1 items-center">
+                    <label for="height">Height</label>
+                    <input
+                      type="number"
+                      id="height"
+                      name="height"
+                      min="1"
+                      max="500"
+                      step="1"
+                      class="bg-gray-100 outline-none border rounded p-1"
+                      readonly
+                    />
+                  </div>
+                  <div class="flex gap-1 items-center">
+                    <label for="aspect-ratio">Maintain Aspect Ratio</label>
+                    <input 
+                      type="checkbox"
+                      id="aspect-ratio"
+                      disabled
+                      checked
+                    />
+                  </div>
                 </div>
-                <div class="flex gap-1 items-center">
-                  <label for="height">Height</label>
-                  <input
-                    type="number"
-                    id="height"
-                    name="height"
-                    min="1"
-                    max="500"
-                    step="1"
-                    class="bg-gray-100 outline-none border rounded p-1"
-                    readonly
-                  />
+                <div id="size-warning" class="sr-only text-yellow-500 flex items-center gap-1">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2c5.523 0 10 4.477 10 10a10 10 0 0 1 -19.995 .324l-.005 -.324l.004 -.28c.148 -5.393 4.566 -9.72 9.996 -9.72zm.01 13l-.127 .007a1 1 0 0 0 0 1.986l.117 .007l.127 -.007a1 1 0 0 0 0 -1.986l-.117 -.007zm-.01 -8a1 1 0 0 0 -.993 .883l-.007 .117v4l.007 .117a1 1 0 0 0 1.986 0l.007 -.117v-4l-.007 -.117a1 1 0 0 0 -.993 -.883z"/>
+                  </svg>
+                  <div id="size-warning-text"></div>
                 </div>
               </div>
 
@@ -286,7 +303,7 @@
 
       <!-- Output -->
       <div id="output-wrapper" class="relative sr-only">
-        <table id="output" class="relative table border rounded p-2 font-mono whitespace-pre-wrap w-fit max-w-screen-2xl overflow-x-auto border-collapse text-xs cursor-pointer"></table>
+        <table id="output" class="relative table border rounded p-2 font-mono whitespace-pre-wrap w-fit max-w-screen-2xl overflow-x-auto border-collapse text-[0.5rem] cursor-pointer"></table>
         <div id="output-copy-success" class="absolute inset-0 backdrop-blur-sm sr-only flex items-center justify-center cursor-pointer pointer-events-none">
           <span class="p-2 bg-gray-200/80 rounded cursor-pointer">
             Copied to Clipboard!

@@ -22,16 +22,21 @@ document.addEventListener('DOMContentLoaded', function() {
     const submitBtn = this.getElementById("submit");
     const submitBtnText = this.getElementById("submit-btn-text");
     const submitBtnSpinner = this.getElementById("submit-btn-spinner");
+    const maintainAspectRatio = this.getElementById("aspect-ratio");
+    const sizeWarning = this.getElementById("size-warning");
+    const sizeWarningText = this.getElementById("size-warning-text");
     const sizeRadios = sizeContainer.querySelectorAll('input[name="size"]');
+    const defaultSizeRadio = this.getElementById(Array.from(sizeRadios).find(radio => radio.checked).id);
     const sizeRadioLabels = sizeContainer.getElementsByTagName('label'); 
     const widthAndHeightInputs = customSize.getElementsByTagName('input');
 
     /* ===== VARIABLES ===== */
+    const MAX_LEGNTH = 500;
     const size = {
         twitch: {
             width: 30,
             height: undefined,
-            maxHeight: 16
+            maxHeight: 15
         },
         discord: {
             width: 32,
@@ -40,18 +45,22 @@ document.addEventListener('DOMContentLoaded', function() {
         },
         small: {
             width: 30,
-            height: undefined
+            height: undefined,
+            maxHeight: MAX_LEGNTH
         },
         medium: {
-            width: 90,
-            height: undefined
+            width: 60,
+            height: undefined,
+            maxHeight: MAX_LEGNTH
         },
         large: {
-            width: 150,
-            height: undefined
+            width: 120,
+            height: undefined,
+            maxHeight: MAX_LEGNTH
         }
     };
     let clipboardModalTimeout;
+    let image;
 
     /* ===== FUNCTIONS ===== */
 
@@ -105,6 +114,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         imageInput.value = '';
         hide(imageOptions);
+        defaultSizeRadio.checked = true;
 
         if (message) {
             addErrorMessage(message);
@@ -112,13 +122,40 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     /**
-     * Update the width and height based on `type`
+     * Update the size warning, based on `length`, `maxLength`, and state of `maintainAspectRatio` checkbox.
      * 
-     * @param {string} type - Must correspond to a key within 'size'.
+     * @param {number} length 
+     * @param {number} maxLength
+     * @param {isHeight} bool 
+     * @returns {number}
      */
-    function updateWidthAndHeight(type) {
-        widthInput.value = size[type].width;
-        heightInput.value = size[type].height;
+    function handleSizeWarning(length, maxLength, isHeight = true) {
+        const isAspectRatioMaintained = maintainAspectRatio.checked;
+
+        if (length < maxLength) {
+            sizeWarningText.textContent = '';
+            hide(sizeWarning);
+            return length;
+        }
+
+        if (isAspectRatioMaintained) {
+            sizeWarningText.textContent = `Aspect Ratio cannot be maintained. ${isHeight ? "Height" : "Width"} cannot exceed ${maxLength}.`;
+            show(sizeWarning);
+        }
+
+        return maxLength;
+    }
+
+    /**
+     * Update the width and height.
+     * 
+     * @param {number} width 
+     * @param {number} height 
+     * @param {number} maxHeight 
+     */
+    function updateWidthAndHeight(width, height, maxHeight) {
+        widthInput.value = width;
+        heightInput.value = handleSizeWarning(height, maxHeight);
     };
 
     /**
@@ -137,22 +174,29 @@ document.addEventListener('DOMContentLoaded', function() {
         hide(error);
         error.textContent = '';
 
-        updateWidthAndHeight(sizeContainer.querySelector('input:checked').value);
+        const type = sizeContainer.querySelector('input:checked').value;
+        const { width, height, maxHeight } = size[type];
+        updateWidthAndHeight(width, height, maxHeight);
     };
 
+    /**
+     * Given an ascii height, determine width of ascii that maintains aspect ratio.
+     * 
+     * @param {height} height - The height of the ascii 
+     * @returns {number} The new width.
+     */
+    function getCalculatedWidth(height) {
+        return 2 * Math.round((height * image.width) / image.height);
+    }
 
     /**
-     * Determine height of ascii
+     * Given an ascii width, determine height of ascii that maintains aspect ratio.
      * 
-     * @param {number} imageWidth - The width of the original image.
-     * @param {number} imageHeight - The height of the original image.
-     * @param {string} type - Must correspond to a key within 'size'.
+     * @param {number} width - The width of the ascii.
      * @returns {number} The new height.
      */
-    function getHeight(imageWidth, imageHeight, type) {
-        const maxHeight = size[type].maxHeight ?? Number.MAX_SAFE_INTEGER;
-        const calculatedHeight = Math.round((size[type].width * imageHeight) / imageWidth / 2);
-        return Math.min(calculatedHeight, maxHeight);
+    function getCalculatedHeight(width) {
+        return Math.round((width * image.height) / image.width / 2);
     }
 
     /**
@@ -165,11 +209,11 @@ document.addEventListener('DOMContentLoaded', function() {
         const validTypes = ['image/jpeg', 'image/png'];
 
         if (validTypes.includes(img.type)) {
-            const image = new Image();
+            image = new Image();
             image.src = URL.createObjectURL(img);
             image.onload = function() {
                 this.setAttribute('name', img.name);
-                Object.keys(size).forEach(type => size[type].height = getHeight(this.width, this.height, type));
+                Object.keys(size).forEach(type => size[type].height = getCalculatedHeight(size[type].width));
                 displayOptions(this);
             }
         } else {
@@ -292,15 +336,29 @@ document.addEventListener('DOMContentLoaded', function() {
                     input.classList.add('bg-gray-100');
                 }
             }
+
+            if (enabling) {
+                maintainAspectRatio.removeAttribute('disabled');
+            } else {
+                maintainAspectRatio.setAttribute('disabled', 'disabled');
+            }
         }
 
+
         const type = event.target.value;
+        let width, height, maxHeight; 
         if (type === "custom") {
             changeUsability(true);
+            width = parseInt(widthInput.value);
+            height = parseInt(heightInput.value);
+            maxHeight = MAX_LEGNTH;
         } else {
             changeUsability(false);
-            updateWidthAndHeight(type);
+            width = size[type].width;
+            height = size[type].height;
+            maxHeight = size[type].maxHeight;
         }
+        updateWidthAndHeight(width, height, maxHeight);
     }
 
     /**
@@ -353,10 +411,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     /**
      * Handles when user clicks output to add to clipboard.
-     * 
-     * @param {MouseEvent} event Triggers on click.
      */
-    async function outputClickAction(event) {
+    async function outputClickAction() {
         const popIn = element => {
             show(element);
             element.classList.add('animate-popin');
@@ -398,36 +454,68 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    /**
+     * Handles when user makes change to width input.
+     * 
+     * @param {Event} event 
+     */
+    function widthInputChangeAction(event) {
+        const isAspectRatioMaintained = maintainAspectRatio.checked;
+        const width = Math.min(event.target.value, MAX_LEGNTH);
+        widthInput.value = width;
+
+        if (isAspectRatioMaintained) {
+            const calculatedHeight = getCalculatedHeight(width);
+            heightInput.value = handleSizeWarning(calculatedHeight, MAX_LEGNTH);
+        }
+    }
+
+    /**
+     * Handles when user makes change to height input.
+     * 
+     * @param {Event} event 
+     */
+    function heightInputChangeAction(event) {
+        const isAspectRatioMaintained = maintainAspectRatio.checked;
+        const height = Math.min(event.target.value, MAX_LEGNTH);
+        heightInput.value = height;
+
+        if (isAspectRatioMaintained) {
+            const calculatedWidth = getCalculatedWidth(height);
+            widthInput.value = handleSizeWarning(calculatedWidth, MAX_LEGNTH, false);
+        }
+    }
+
     /* ===== EVENT LISTENERS ===== */
 
     // Upload input events
     uploadBtn.addEventListener('keydown', event => event.key === "Enter" ? imageInput.click() : null);
-    uploadBtn.addEventListener('drop', event => uploadBtnDropAction(event));
+    uploadBtn.addEventListener('drop', uploadBtnDropAction);
     uploadBtn.addEventListener('dragover', event => event.preventDefault());
-    imageInput.addEventListener('change', event => imageInputChangeAction(event));
+    imageInput.addEventListener('change', imageInputChangeAction);
 
     // Size radio events
     sizeRadios.forEach(radio => {
-        radio.addEventListener('click', event => sizeRadioClickAction(event));
+        radio.addEventListener('click', sizeRadioClickAction);
     });
     for (const label of sizeRadioLabels) {
-        label.addEventListener('keydown', event => sizeRadioLabelKeydownAction(event));
+        label.addEventListener('keydown', sizeRadioLabelKeydownAction);
     }
 
+    // Width & height events
+    widthInput.addEventListener('change', widthInputChangeAction);
+    heightInput.addEventListener('change', heightInputChangeAction);
+
     // Exposure input events
-    exposure.addEventListener('input', event => {
-        exposureValue.value = event.target.value;
-    });
-    exposureValue.addEventListener('change', event => {
-        exposure.value = event.target.value;
-    });
+    exposure.addEventListener('input', event => exposureValue.value = event.target.value);
+    exposureValue.addEventListener('change', event => exposure.value = event.target.value);
 
     // Form events
-    form.addEventListener('submit', event => formSubmitAction(event));
+    form.addEventListener('submit', formSubmitAction);
 
     // Output events
-    output.addEventListener('click', event => outputClickAction(event));
+    output.addEventListener('click', outputClickAction);
     outputContainer.addEventListener('keydown', event => ["Enter", " "].includes(event.key) ? output.click() : null);
-    copySuccess.addEventListener('animationend', event => outputOverlayAnimationEndAction(event));
-    copyError.addEventListener('animationend', event => outputOverlayAnimationEndAction(event));
+    copySuccess.addEventListener('animationend', outputOverlayAnimationEndAction);
+    copyError.addEventListener('animationend', outputOverlayAnimationEndAction);
 });
