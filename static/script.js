@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const widthAndHeightInputs = customSize.getElementsByTagName('input');
 
     /* ===== VARIABLES ===== */
-    const MAX_LEGNTH = 500;
+    const MAX_LENGTH = 500;
     const size = {
         twitch: {
             width: 30,
@@ -46,17 +46,17 @@ document.addEventListener('DOMContentLoaded', function() {
         small: {
             width: 30,
             height: undefined,
-            maxHeight: MAX_LEGNTH
+            maxHeight: MAX_LENGTH
         },
         medium: {
             width: 60,
             height: undefined,
-            maxHeight: MAX_LEGNTH
+            maxHeight: MAX_LENGTH
         },
         large: {
             width: 120,
             height: undefined,
-            maxHeight: MAX_LEGNTH
+            maxHeight: MAX_LENGTH
         }
     };
     let clipboardModalTimeout;
@@ -132,7 +132,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function handleSizeWarning(length, maxLength, isHeight = true) {
         const isAspectRatioMaintained = maintainAspectRatio.checked;
 
-        if (length < maxLength) {
+        if (length <= maxLength) {
             sizeWarningText.textContent = '';
             hide(sizeWarning);
             return length;
@@ -159,6 +159,15 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     /**
+     * Function that gets the checked size type radio button.
+     * 
+     * @returns {string}
+     */
+    function getCurrentType() {
+        return sizeContainer.querySelector('input:checked').value;
+    }
+
+    /**
      * Render options to user
      * 
      * @param {Image} image - The user-uploade image.
@@ -174,8 +183,7 @@ document.addEventListener('DOMContentLoaded', function() {
         hide(error);
         error.textContent = '';
 
-        const type = sizeContainer.querySelector('input:checked').value;
-        const { width, height, maxHeight } = size[type];
+        const { width, height, maxHeight } = size[getCurrentType()];
         updateWidthAndHeight(width, height, maxHeight);
     };
 
@@ -196,7 +204,7 @@ document.addEventListener('DOMContentLoaded', function() {
      * @returns {number} The new height.
      */
     function getCalculatedHeight(width) {
-        return Math.round((width * image.height) / image.width / 2);
+        return Math.max(1, Math.round((width * image.height) / image.width / 2));
     }
 
     /**
@@ -344,14 +352,13 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-
         const type = event.target.value;
         let width, height, maxHeight; 
         if (type === "custom") {
             changeUsability(true);
             width = parseInt(widthInput.value);
             height = parseInt(heightInput.value);
-            maxHeight = MAX_LEGNTH;
+            maxHeight = MAX_LENGTH;
         } else {
             changeUsability(false);
             width = size[type].width;
@@ -455,18 +462,31 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     /**
+     * Handles when user clicks the "maintain aspect ratio" checkbox ON.
+     * 
+     * @param {MouseEvent} event 
+     */
+    function maintainAspectRatioClickAction(event) {
+        if (event.target.checked) {
+            const width = parseInt(widthInput.value);
+            const calculatedHeight = getCalculatedHeight(width);
+            updateWidthAndHeight(width, calculatedHeight, MAX_LENGTH);
+        }
+    }
+
+    /**
      * Handles when user makes change to width input.
      * 
      * @param {Event} event 
      */
     function widthInputChangeAction(event) {
         const isAspectRatioMaintained = maintainAspectRatio.checked;
-        const width = Math.min(event.target.value, MAX_LEGNTH);
+        const width = Math.max(1, Math.min(event.target.value, MAX_LENGTH));
         widthInput.value = width;
 
         if (isAspectRatioMaintained) {
             const calculatedHeight = getCalculatedHeight(width);
-            heightInput.value = handleSizeWarning(calculatedHeight, MAX_LEGNTH);
+            heightInput.value = handleSizeWarning(calculatedHeight, MAX_LENGTH);
         }
     }
 
@@ -477,12 +497,12 @@ document.addEventListener('DOMContentLoaded', function() {
      */
     function heightInputChangeAction(event) {
         const isAspectRatioMaintained = maintainAspectRatio.checked;
-        const height = Math.min(event.target.value, MAX_LEGNTH);
+        const height = Math.max(1, Math.min(event.target.value, MAX_LENGTH));
         heightInput.value = height;
 
         if (isAspectRatioMaintained) {
             const calculatedWidth = getCalculatedWidth(height);
-            widthInput.value = handleSizeWarning(calculatedWidth, MAX_LEGNTH, false);
+            widthInput.value = handleSizeWarning(calculatedWidth, MAX_LENGTH, false);
         }
     }
 
@@ -501,6 +521,9 @@ document.addEventListener('DOMContentLoaded', function() {
     for (const label of sizeRadioLabels) {
         label.addEventListener('keydown', sizeRadioLabelKeydownAction);
     }
+
+    // Maintain aspect ratio event
+    maintainAspectRatio.addEventListener('click', maintainAspectRatioClickAction);
 
     // Width & height events
     widthInput.addEventListener('change', widthInputChangeAction);
