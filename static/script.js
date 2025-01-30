@@ -1,5 +1,10 @@
+"use strict";
+
 document.addEventListener('DOMContentLoaded', function() {
     /* ===== ELEMENTS ===== */
+    const displayBtn = this.getElementById('display');
+    const displayLight = this.getElementById('display-light');
+    const displayDark = this.getElementById('display-dark');
     const form = this.getElementById('form');
     const imageInput = this.getElementById('image');
     const imageOptions = this.getElementById('options');
@@ -32,6 +37,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     /* ===== VARIABLES ===== */
     const MAX_LENGTH = 500;
+    const THEME = "theme";
+    const LIGHT_THEME = "light";
+    const DARK_THEME = "dark";
     const size = {
         twitch: {
             width: 30,
@@ -59,10 +67,22 @@ document.addEventListener('DOMContentLoaded', function() {
             maxHeight: MAX_LENGTH
         }
     };
+
     let clipboardModalTimeout;
     let image;
 
     /* ===== FUNCTIONS ===== */
+
+    function onLoad() {
+        let themePreference = localStorage.getItem(THEME);
+        if (!themePreference) {
+            themePreference = window.matchMedia('(prefers-color-scheme: dark)').matches ? DARK_THEME : LIGHT_THEME;
+        }
+
+        if (themePreference === DARK_THEME) {
+            displayBtn.click();
+        }
+    }
 
     /**
      * Makes an element visible
@@ -292,7 +312,24 @@ document.addEventListener('DOMContentLoaded', function() {
         outputContainer.tabIndex = "0";
     }
 
-    // actions
+    /* ===== ACTIONS ===== */
+
+    function displayBtnClickAction() {
+        const html = document.documentElement; 
+        if (html.classList.contains("dark")) {
+            html.classList.remove("dark");
+            show(displayLight);
+            hide(displayDark);
+            displayBtn.title = "Dark theme";
+            localStorage.setItem(THEME, LIGHT_THEME);
+        } else {
+            html.classList.add("dark");
+            show(displayDark);
+            hide(displayLight);
+            displayBtn.title = "Light theme";
+            localStorage.setItem(THEME, DARK_THEME);
+        }
+    }
 
     /**
      * Uploads files when dropped into upload button.
@@ -508,6 +545,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     /* ===== EVENT LISTENERS ===== */
 
+    // Display button events
+    displayBtn.addEventListener('click', displayBtnClickAction);
+
     // Upload input events
     uploadBtn.addEventListener('keydown', event => event.key === "Enter" ? imageInput.click() : null);
     uploadBtn.addEventListener('drop', uploadBtnDropAction);
@@ -541,4 +581,6 @@ document.addEventListener('DOMContentLoaded', function() {
     outputContainer.addEventListener('keydown', event => ["Enter", " "].includes(event.key) ? output.click() : null);
     copySuccess.addEventListener('animationend', outputOverlayAnimationEndAction);
     copyError.addEventListener('animationend', outputOverlayAnimationEndAction);
+
+    onLoad();
 });
