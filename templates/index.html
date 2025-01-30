@@ -5,7 +5,7 @@
     <link rel="stylesheet" href="../static/styles.css"/>
     <script src="../static/script.js"></script>
   </head>
-  <body class="w-full pt-12 flex flex-col min-h-screen bg-white dark:bg-black">
+  <body class="w-full pt-12 flex flex-col min-h-screen bg-white dark:bg-neutral-900 dark:text-neutral-100">
     <button id="display" type="button" class="fixed top-0 right-0 pr-4 pt-4" title="Dark mode">
       <svg id="display-light" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-moon">
         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
@@ -28,7 +28,7 @@
               for="image"
               role="button"
               tabindex="0"
-              class="w-96 h-52 bg-gray-200 hover:bg-gray-200/80 border border-dashed border-gray-400 rounded-lg cursor-pointer btn p-1 rounded"
+              class="w-96 h-52 bg-gray-200 hover:bg-gray-200/80 dark:bg-zinc-800/80 dark:hover:bg-zinc-800 border border-dashed border-gray-400 rounded-lg cursor-pointer btn p-1 rounded"
               id="upload"
             >
 
@@ -36,7 +36,7 @@
               <div class="h-full flex items-center">
                 <div class="flex flex-row items-center">
                   <div id="img-placeholder" class="p-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="5rem" height="5rem" viewBox="0 0 24 24" fill="#000000">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="5rem" height="5rem" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M0 0h24v24H0V0z" fill="none"/>
                       <path d="M18 20H4V6h9V4H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-9h-2v9zm-7.79-3.17l-1.96-2.36L5.5 18h11l-3.54-4.71zM20 4V1h-2v3h-3c.01.01 0 2 0 2h3v2.99c.01.01 2 0 2 0V6h3V4h-3z"/>
                     </svg>
@@ -69,7 +69,7 @@
 
           <!-- Options -->
           <div id="options" class="sr-only flex flex-col gap-2 items-center">
-            <div class="flex flex-col gap-2 w-fit bg-gray-200 border border-gray-400 rounded p-4">
+            <div class="flex flex-col gap-2 w-fit bg-gray-200 dark:bg-zinc-800/80 border border-gray-400 rounded p-4">
 
               <!-- Size -->
               <strong>Size</strong>
@@ -254,7 +254,7 @@
                     step="1"
                     value="50"
                     title="Exposure"
-                    class="outline-none border rounded p-1"
+                    class="outline-none border dark:border-2 dark:border-gray-800 rounded p-1 dark:bg-neutral-900"
                   />
                 </div>
               </div>
@@ -268,7 +268,7 @@
                   <select
                     id="style"
                     name="style"
-                    class="py-1 pr-1"
+                    class="py-1 pr-1 dark:bg-neutral-900"
                   >
                     <option value="normal" selected>Normal</option>
                     <option value="contrast">High Contrast</option>
@@ -283,12 +283,17 @@
                 <label for="invert" class="w-fit">
                   <strong>Invert</strong>
                 </label>
-                <input
-                  type="checkbox"
-                  id="invert"
-                  name="invert"
-                  class="w-5 h-5 accent-black cursor-pointer"
-                />
+                <div class="relative">
+                  <input
+                    type="checkbox"
+                    id="invert"
+                    name="invert"
+                    class="relative peer shrink-0 appearance-none w-5 h-5 bg-white dark:bg-neutral-900 checked:bg-black dark:checked:bg-white rounded cursor-pointer"
+                  />
+                  <svg class="absolute inset-0 w-5 h-5 hidden stroke-white dark:stroke-black peer-checked:block pointer-events-none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                </div>
               </div>
 
               <button
