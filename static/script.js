@@ -89,15 +89,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     /**
-     * Determines whether or not the page is in dark mode
-     * 
-     * @returns {bool}
-     */
-    function isDarkMode() {
-        return document.documentElement.classList.contains(DARK_THEME);
-    }
-
-    /**
      * Makes an element visible
      * 
      * @param {HTMLElement} element
@@ -155,6 +146,15 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     /**
+     * Determines whether or not the "Maintain Aspect Ratio" is checked
+     * 
+     * @returns {bool}
+     */
+    function isAspectRatioMaintained() {
+        return maintainAspectRatio.checked;
+    }
+
+    /**
      * Update the size warning, based on `length`, `maxLength`, and state of `maintainAspectRatio` checkbox.
      * 
      * @param {number} length 
@@ -163,15 +163,13 @@ document.addEventListener('DOMContentLoaded', function() {
      * @returns {number}
      */
     function handleSizeWarning(length, maxLength, isHeight = true) {
-        const isAspectRatioMaintained = maintainAspectRatio.checked;
-
         if (length <= maxLength) {
             sizeWarningText.textContent = '';
             hide(sizeWarning);
             return length;
         }
 
-        if (isAspectRatioMaintained) {
+        if (isAspectRatioMaintained()) {
             sizeWarningText.textContent = `Aspect Ratio cannot be maintained. ${isHeight ? "Height" : "Width"} cannot exceed ${maxLength}.`;
             show(sizeWarning);
         }
@@ -216,7 +214,24 @@ document.addEventListener('DOMContentLoaded', function() {
         hide(error);
         error.textContent = '';
 
-        const { width, height, maxHeight } = size[getCurrentType()];
+        const type = getCurrentType();
+        let width, height, maxHeight;
+
+        // special case - if type is custom and we are NOT maintaining aspect ratio, we do not change width + height
+        if (type === "custom" && !isAspectRatioMaintained()) {
+            return;
+        }
+
+        if (type === "custom") {
+            width = Math.min(image.width, MAX_LENGTH);
+            height = getCalculatedHeight(image.width); 
+            maxHeight = MAX_LENGTH;
+        } else {
+            width = size[type].width;
+            height = size[type].height;
+            maxHeight = size[type].maxHeight;
+        }
+        
         updateWidthAndHeight(width, height, maxHeight);
     };
 
@@ -389,8 +404,8 @@ document.addEventListener('DOMContentLoaded', function() {
      */
     function sizeRadioClickAction(event) {
         const changeUsability = enabling => {
-            const disabledClasses = ['bg-gray-100', 'dark:bg-gray-700'];
-            const enabledClasses = ['dark:bg-neutral-900'];
+            let disabledClasses = ['bg-gray-100', 'dark:bg-gray-700'];
+            let enabledClasses = ['dark:bg-neutral-900'];
             
             for (const input of widthAndHeightInputs) {
                 if (enabling) {
@@ -399,15 +414,23 @@ document.addEventListener('DOMContentLoaded', function() {
                     input.classList.add(...enabledClasses);
                 } else {
                     input.setAttribute('readonly', 'readonly');
+                    input.classList.remove(...enabledClasses);
                     input.classList.add(...disabledClasses);
-                    input.classList.add(...enabledClasses);
                 }
             }
 
+            disabledClasses = ['checked:bg-gray-600', 'dark:checked:bg-gray-200'];
+            enabledClasses = ['checked:bg-black', 'dark:checked:bg-white'];
+
             if (enabling) {
+                maintainAspectRatio.classList.remove(...disabledClasses);
+                maintainAspectRatio.classList.add(...enabledClasses)
                 maintainAspectRatio.removeAttribute('disabled');
             } else {
+                maintainAspectRatio.classList.remove(...enabledClasses);
+                maintainAspectRatio.classList.add(...disabledClasses)
                 maintainAspectRatio.setAttribute('disabled', 'disabled');
+                maintainAspectRatio.checked = true;
             }
         }
 
@@ -539,11 +562,10 @@ document.addEventListener('DOMContentLoaded', function() {
      * @param {Event} event 
      */
     function widthInputChangeAction(event) {
-        const isAspectRatioMaintained = maintainAspectRatio.checked;
         const width = Math.max(1, Math.min(event.target.value, MAX_LENGTH));
         widthInput.value = width;
 
-        if (isAspectRatioMaintained) {
+        if (isAspectRatioMaintained()) {
             const calculatedHeight = getCalculatedHeight(width);
             heightInput.value = handleSizeWarning(calculatedHeight, MAX_LENGTH);
         }
@@ -555,11 +577,10 @@ document.addEventListener('DOMContentLoaded', function() {
      * @param {Event} event 
      */
     function heightInputChangeAction(event) {
-        const isAspectRatioMaintained = maintainAspectRatio.checked;
         const height = Math.max(1, Math.min(event.target.value, MAX_LENGTH));
         heightInput.value = height;
 
-        if (isAspectRatioMaintained) {
+        if (isAspectRatioMaintained()) {
             const calculatedWidth = getCalculatedWidth(height);
             widthInput.value = handleSizeWarning(calculatedWidth, MAX_LENGTH, false);
         }

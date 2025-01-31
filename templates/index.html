@@ -86,7 +86,7 @@
                   >
                   <label 
                     for="small" 
-                    class="w-full px-4 py-2 bg-red-600 hover:bg-red-600/90 cursor-pointer border rounded-full text-white peer-checked:ring-2 peer-checked:ring-blue-500 peer-checked:ring-offset-2 dark:peer-checked:ring-offset-zinc-800/80"
+                    class="w-full px-4 py-2 bg-red-600 hover:bg-red-600/90 cursor-pointer rounded-full text-white peer-checked:ring-2 peer-checked:ring-blue-500 peer-checked:ring-offset-2 dark:peer-checked:ring-offset-zinc-800/80"
                     tabindex="0"
                   >
                     <span class="inline-block align-middle text-center w-full">Small</span>
@@ -105,7 +105,7 @@
                   >
                   <label 
                     for="medium" 
-                    class="w-full px-4 py-2 bg-yellow-600 hover:bg-yellow-600/90 cursor-pointer border rounded-full text-white peer-checked:ring-2 peer-checked:ring-blue-500 peer-checked:ring-offset-2 dark:peer-checked:ring-offset-zinc-800/80"
+                    class="w-full px-4 py-2 bg-yellow-600 hover:bg-yellow-600/90 cursor-pointer rounded-full text-white peer-checked:ring-2 peer-checked:ring-blue-500 peer-checked:ring-offset-2 dark:peer-checked:ring-offset-zinc-800/80"
                     tabindex="0"
                   >
                     <span class="inline-block align-middle text-center w-full">Medium</span>
@@ -123,7 +123,7 @@
                   >
                   <label 
                     for="large" 
-                    class="w-full px-4 py-2 bg-green-600 hover:bg-green-600/90 cursor-pointer border rounded-full text-white peer-checked:ring-2 peer-checked:ring-blue-500 peer-checked:ring-offset-2 dark:peer-checked:ring-offset-zinc-800/80"
+                    class="w-full px-4 py-2 bg-green-600 hover:bg-green-600/90 cursor-pointer rounded-full text-white peer-checked:ring-2 peer-checked:ring-blue-500 peer-checked:ring-offset-2 dark:peer-checked:ring-offset-zinc-800/80"
                     tabindex="0"
                   >
                     <span class="inline-block align-middle text-center w-full">Large</span>
@@ -177,7 +177,7 @@
                   >
                   <label 
                     for="custom"
-                    class="w-full px-4 py-2 bg-gray-400 hover:bg-gray-400/90 cursor-pointer border rounded-full text-white peer-checked:ring-2 peer-checked:ring-blue-500 peer-checked:ring-offset-2 dark:peer-checked:ring-offset-zinc-800/80"
+                    class="w-full px-4 py-2 bg-gray-400 hover:bg-gray-400/90 cursor-pointer rounded-full text-white peer-checked:ring-2 peer-checked:ring-blue-500 peer-checked:ring-offset-2 dark:peer-checked:ring-offset-zinc-800/80"
                     tabindex="0"
                   >
                     <span class="inline-block align-middle text-center w-full">Custom</span>
@@ -198,7 +198,7 @@
                       min="1"
                       max="500"
                       step="1"
-                      class="bg-gray-100 dark:bg-gray-700 outline-none border rounded p-1 dark:border-gray-800 read-only:cursor-default"
+                      class="bg-gray-100 dark:bg-gray-700 outline-none border-2 border-gray-100 dark:border-gray-800 rounded p-1 read-only:cursor-default"
                       readonly
                     />
                   </div>
@@ -211,19 +211,24 @@
                       min="1"
                       max="500"
                       step="1"
-                      class="bg-gray-100 dark:bg-gray-700 outline-none border rounded p-1 dark:border-gray-800 read-only:cursor-default"
+                      class="bg-gray-100 dark:bg-gray-700 outline-none border-2 border-gray-100 dark:border-gray-800 rounded p-1 read-only:cursor-default"
                       readonly
                     />
                   </div>
                   <div class="flex gap-1 items-center">
                     <label for="aspect-ratio">Maintain Aspect Ratio</label>
-                    <input 
-                      type="checkbox"
-                      id="aspect-ratio"
-                      class="cursor-pointer disabled:cursor-default"
-                      disabled
-                      checked
-                    />
+                    <div class="relative flex align-middle">
+                      <input 
+                        type="checkbox"
+                        id="aspect-ratio"
+                        class="relative peer shrink-0 appearance-none w-5 h-5 bg-white dark:bg-neutral-900 checked:bg-gray-600 dark:checked:bg-gray-200 border border-gray-100 dark:border-gray-800 rounded cursor-pointer disabled:cursor-default"
+                        disabled
+                        checked
+                      />
+                      <svg class="absolute inset-0 w-5 h-5 hidden stroke-white dark:stroke-black peer-checked:block pointer-events-none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                      </svg>
+                    </div>
                   </div>
                 </div>
                 <div id="size-warning" class="sr-only text-yellow-500 flex items-center gap-1">
@@ -256,7 +261,7 @@
                     step="1"
                     value="50"
                     title="Exposure"
-                    class="outline-none border dark:border-2 dark:border-gray-800 rounded p-1 dark:bg-neutral-900"
+                    class="outline-none border-2 border-gray-100 dark:border-gray-800 rounded p-1 dark:bg-neutral-900"
                   />
                 </div>
               </div>
@@ -266,11 +271,11 @@
                 <label for="style" class="w-fit">
                   <strong>Style</strong>
                 </label>
-                <div class="flex flex-row gap-2">
+                <div class="border-2 rounded border-gray-100 dark:border-gray-800 w-fit">
                   <select
                     id="style"
                     name="style"
-                    class="p-1 dark:bg-neutral-900 cursor-pointer rounded"
+                    class="p-1 dark:bg-neutral-900 cursor-pointer rounded dark:border-gray-800"
                   >
                     <option value="normal" selected>Normal</option>
                     <option value="contrast">High Contrast</option>
@@ -290,7 +295,7 @@
                     type="checkbox"
                     id="invert"
                     name="invert"
-                    class="relative peer shrink-0 appearance-none w-5 h-5 bg-white dark:bg-neutral-900 checked:bg-black dark:checked:bg-white rounded cursor-pointer"
+                    class="relative peer shrink-0 appearance-none w-5 h-5 bg-white dark:bg-neutral-900 checked:bg-black dark:checked:bg-white border border-gray-100 dark:border-gray-800 rounded cursor-pointer"
                   />
                   <svg class="absolute inset-0 w-5 h-5 hidden stroke-white dark:stroke-black peer-checked:block pointer-events-none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="20 6 9 17 4 12"></polyline>
