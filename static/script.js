@@ -21,16 +21,16 @@ document.addEventListener('DOMContentLoaded', function() {
     const thumbnailName = this.getElementById('thumbnail-name');
     const sizeContainer = this.getElementById('size');
     const output = this.getElementById('output');
-    const copySuccess = this.getElementById("output-copy-success");
-    const copyError = this.getElementById("output-copy-failure");
-    const outputContainer = this.getElementById("output-wrapper");
-    const submitBtn = this.getElementById("submit");
-    const submitBtnText = this.getElementById("submit-btn-text");
-    const submitBtnSpinner = this.getElementById("submit-btn-spinner");
-    const maintainAspectRatio = this.getElementById("aspect-ratio");
-    const sizeWarning = this.getElementById("size-warning");
-    const sizeWarningText = this.getElementById("size-warning-text");
-    const invert = this.getElementById("invert");
+    const copySuccess = this.getElementById('output-copy-success');
+    const copyError = this.getElementById('output-copy-failure');
+    const outputContainer = this.getElementById('output-wrapper');
+    const submitBtn = this.getElementById('submit');
+    const submitBtnText = this.getElementById('submit-btn-text');
+    const submitBtnSpinner = this.getElementById('submit-btn-spinner');
+    const maintainAspectRatio = this.getElementById('aspect-ratio');
+    const sizeWarning = this.getElementById('size-warning');
+    const sizeWarningText = this.getElementById('size-warning-text');
+    const invert = this.getElementById('invert');
     const sizeRadios = sizeContainer.querySelectorAll('input[name="size"]');
     const defaultSizeRadio = this.getElementById(Array.from(sizeRadios).find(radio => radio.checked).id);
     const sizeRadioLabels = sizeContainer.getElementsByTagName('label'); 
@@ -74,6 +74,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     /* ===== FUNCTIONS ===== */
 
+    /**
+     * Loads page theme - defaults to localStorage, but falls back to OS settings
+     */
     function onLoad() {
         let themePreference = localStorage.getItem(THEME);
         if (!themePreference) {
@@ -83,6 +86,15 @@ document.addEventListener('DOMContentLoaded', function() {
         if (themePreference === DARK_THEME) {
             displayBtn.click();
         }
+    }
+
+    /**
+     * Determines whether or not the page is in dark mode
+     * 
+     * @returns {bool}
+     */
+    function isDarkMode() {
+        return document.documentElement.classList.contains(DARK_THEME);
     }
 
     /**
@@ -315,6 +327,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     /* ===== ACTIONS ===== */
 
+    /**
+     * Toggles between dark mode and light mode
+     */
     function displayBtnClickAction() {
         const html = document.documentElement; 
         if (html.classList.contains("dark")) {
@@ -374,13 +389,18 @@ document.addEventListener('DOMContentLoaded', function() {
      */
     function sizeRadioClickAction(event) {
         const changeUsability = enabling => {
+            const disabledClasses = ['bg-gray-100', 'dark:bg-gray-700'];
+            const enabledClasses = ['dark:bg-neutral-900'];
+            
             for (const input of widthAndHeightInputs) {
                 if (enabling) {
                     input.removeAttribute('readonly');
-                    input.classList.remove('bg-gray-100');
+                    input.classList.remove(...disabledClasses);
+                    input.classList.add(...enabledClasses);
                 } else {
                     input.setAttribute('readonly', 'readonly');
-                    input.classList.add('bg-gray-100');
+                    input.classList.add(...disabledClasses);
+                    input.classList.add(...enabledClasses);
                 }
             }
 
