@@ -15,6 +15,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// themes
+const (
+	THEME_LIGHT = "light"
+	THEME_DARK  = "dark"
+)
+
 // styles
 const (
 	STYLE_NORMAL        = "normal"
@@ -52,6 +58,7 @@ func (cb CheckboxBool) Bool() bool {
 }
 
 type FormData struct {
+	Theme    *string      `form:"theme"`
 	Width    *int         `form:"width"`
 	Height   *int         `form:"height"`
 	IsInvert CheckboxBool `form:"invert"`
@@ -79,12 +86,32 @@ type Point struct {
 	Y int
 }
 
+func getThemes() []string {
+	return []string{THEME_LIGHT, THEME_DARK}
+}
+
 func getStyles() []string {
 	return []string{STYLE_NORMAL, STYLE_BRIGHTNESS, STYLE_HIGH_CONTRAST, STYLE_EDGE_CONTRAST}
 }
 
 func getInvalidStylesError() error {
 	return fmt.Errorf("invalid style: must be one of the following: %s", strings.Join(getStyles(), ", "))
+}
+
+func validateTheme(f *FormData) error {
+	if f.Theme != nil {
+		theme := *f.Theme
+		themes := getThemes()
+
+		if !slices.Contains(themes, theme) {
+			return fmt.Errorf("invalid theme: must be one of the following: %s", strings.Join(themes, ", "))
+		}
+	} else {
+		defaultTheme := THEME_LIGHT
+		f.Theme = &defaultTheme
+	}
+
+	return nil
 }
 
 func validateExposure(f *FormData) error {
@@ -282,6 +309,10 @@ func getFormData(c *gin.Context) (FormData, error) {
 }
 
 func validateFormData(form *FormData, bounds image.Rectangle) error {
+	if err := validateTheme(form); err != nil {
+		return err
+	}
+
 	if err := validateExposure(form); err != nil {
 		return err
 	}
@@ -370,6 +401,10 @@ func pixelsToAscii(point Point, form FormData, grayscaleMatrix [][]float64, enco
 	return rune(0x2800 + int(offset))
 }
 
+func isInvertNeeded(isInverted bool, theme string) bool {
+	return isInverted == (theme == THEME_LIGHT)
+}
+
 func invertBrail(r rune) rune {
 	return r ^ 0xFF
 }
@@ -400,7 +435,7 @@ func generateAscii(img image.Image, form FormData, encodingSettings EncodingSett
 		ascii = append(ascii, builder.String())
 	}
 
-	if form.IsInvert.Bool() {
+	if isInvertNeeded(form.IsInvert.Bool(), *form.Theme) {
 		ascii = invertAscii(ascii)
 	}
 

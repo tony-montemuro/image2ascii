@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const displayLight = this.getElementById('display-light');
     const displayDark = this.getElementById('display-dark');
     const form = this.getElementById('form');
+    const themeInput = this.getElementById('theme');
     const imageInput = this.getElementById('image');
     const imageOptions = this.getElementById('options');
     const customSize = this.getElementById('custom-size');
@@ -30,7 +31,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const maintainAspectRatio = this.getElementById('aspect-ratio');
     const sizeWarning = this.getElementById('size-warning');
     const sizeWarningText = this.getElementById('size-warning-text');
-    const invert = this.getElementById('invert');
     const sizeRadios = sizeContainer.querySelectorAll('input[name="size"]');
     const defaultSizeRadio = this.getElementById(Array.from(sizeRadios).find(radio => radio.checked).id);
     const sizeRadioLabels = sizeContainer.getElementsByTagName('label'); 
@@ -353,14 +353,15 @@ document.addEventListener('DOMContentLoaded', function() {
             hide(displayDark);
             displayBtn.title = "Dark theme";
             localStorage.setItem(THEME, LIGHT_THEME);
+            themeInput.value = LIGHT_THEME;
         } else {
             html.classList.add("dark");
             show(displayDark);
             hide(displayLight);
             displayBtn.title = "Light theme";
             localStorage.setItem(THEME, DARK_THEME);
+            themeInput.value = DARK_THEME;
         }
-        invert.click();
     }
 
     /**
