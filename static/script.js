@@ -418,10 +418,12 @@ document.addEventListener('DOMContentLoaded', function() {
             for (const input of widthAndHeightInputs) {
                 if (enabling) {
                     input.removeAttribute('readonly');
+                    input.setAttribute('tabindex', '0');
                     input.classList.remove(...disabledClasses);
                     input.classList.add(...enabledClasses);
                 } else {
                     input.setAttribute('readonly', 'readonly');
+                    input.setAttribute('tabindex', '-1');
                     input.classList.remove(...enabledClasses);
                     input.classList.add(...disabledClasses);
                 }
