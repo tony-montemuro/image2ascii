@@ -5,6 +5,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const displayBtn = this.getElementById('display');
     const displayLight = this.getElementById('display-light');
     const displayDark = this.getElementById('display-dark');
+    const infoBtn = this.getElementById('info');
+    const infoPopup = this.getElementById('info-popup');
+    const infoCloseBtn = this.getElementById('info-popup-close');
     const form = this.getElementById('form');
     const themeInput = this.getElementById('theme');
     const imageInput = this.getElementById('image');
@@ -364,6 +367,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    function infoBtnClickAction() {
+        infoPopup.show();
+    }
+
     /**
      * Uploads files when dropped into upload button.
      * 
@@ -589,8 +596,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     /* ===== EVENT LISTENERS ===== */
 
-    // Display button events
+    // High-level button events
     displayBtn.addEventListener('click', displayBtnClickAction);
+    infoBtn.addEventListener('click', () => infoPopup.showModal());
+    infoCloseBtn.addEventListener('click', () => infoPopup.close());
 
     // Upload input events
     uploadBtn.addEventListener('keydown', event => event.key === "Enter" ? imageInput.click() : null);
