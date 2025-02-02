@@ -9,6 +9,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const infoPopup = this.getElementById('info-popup');
     const infoCloseBtn = this.getElementById('info-popup-close');
     const form = this.getElementById('form');
+    const logo = this.getElementById('logo');
+    const darkLogo = this.getElementById('logo-dark');
     const themeInput = this.getElementById('theme');
     const imageInput = this.getElementById('image');
     const imageOptions = this.getElementById('options');
@@ -354,6 +356,8 @@ document.addEventListener('DOMContentLoaded', function() {
             html.classList.remove("dark");
             show(displayLight);
             hide(displayDark);
+            show(logo);
+            hide(darkLogo);
             displayBtn.title = "Dark theme";
             localStorage.setItem(THEME, LIGHT_THEME);
             themeInput.value = LIGHT_THEME;
@@ -361,6 +365,8 @@ document.addEventListener('DOMContentLoaded', function() {
             html.classList.add("dark");
             show(displayDark);
             hide(displayLight);
+            show(darkLogo);
+            hide(logo);
             displayBtn.title = "Light theme";
             localStorage.setItem(THEME, DARK_THEME);
             themeInput.value = DARK_THEME;

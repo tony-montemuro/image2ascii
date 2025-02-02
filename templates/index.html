@@ -8,7 +8,7 @@
   </head>
   <body class="w-full pt-12 px-2 flex flex-col min-h-screen bg-white dark:bg-neutral-900 dark:text-neutral-100">
     <dialog id="info-popup" class="rounded-lg p-4 dark:bg-neutral-900 dark:text-neutral-100 border border-gray-400 backdrop:bg-black/50">
-      <div class="w-full md:w-[680px] relative flex flex-col gap-2">
+      <div class="w-full md:w-[680px] relative flex flex-col">
         <div class="sticky top-0 right-0 flex justify-end">
           <button type="button" id="info-popup-close" class="w-fit" title="Close">
             <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-square-x">
@@ -18,13 +18,13 @@
           </button>
         </div>
 
-        <div class="overflow-y-auto max-h-[75vh]">
+        <div class="flex flex-col gap-2 overflow-y-auto max-h-[75vh]">
           <h1 class="text-2xl">Frequently Asked Questions</h1>
           <div class="pl-2 md:pl-4">
   
             <!-- Question 1 -->
-            <h2 class="text-lg underline decoration-solid">
-              Why do my Twitch/Discord ASCII outputs look bad?
+            <h2 class="text-lg">
+              <em>Why do my Twitch/Discord ASCII outputs look bad?</em>
             </h2>
             <ul class="text-sm">
               <li class="pl-2 md:pl-4">
@@ -35,7 +35,9 @@
             </ul>
   
             <!-- Question 2 -->
-            <h2 class="text-lg underline decoration-solid">What are the differences between each Style?</h2>
+            <h2 class="text-lg">
+              <em>What are the differences between each Style?</em>
+            </h2>
             <ul class="text-sm">
               <li class="pl-2 md:pl-4">
                 The first 4 Styles use <a class="underline" href="https://en.wikipedia.org/wiki/Dither" target="_blank">dithering</a>, a technique that
@@ -74,8 +76,8 @@
             </ul>
   
             <!-- Question 3 -->
-            <h2 class="text-lg underline decoration-solid">
-              I am not using Twitch or Discord, but a different application. How can I generate a correctly-sized result?
+            <h2 class="text-lg">
+              <em>I am not using Twitch or Discord, but a different application. How can I generate a correctly-sized result?</em>
             </h2>
             <ul class="text-sm">
               <li class="pl-2 md:pl-4">
@@ -104,8 +106,9 @@
   
           <h1 class="text-2xl">About This Website</h1>
           <div class="pl-4 md:pl-8 text-sm">
-            <p>This website was created by Tony Montemuro. To get in contact with me, check out <a class="underline" href="https://tonysmb.com/" target="_blank">my website</a>.</p>
+            <p>Created by Tony Montemuro. To get in contact with me, check out <a class="underline" href="https://tonysmb.com/" target="_blank">my website</a>.</p>
             <p>This website is open source. <a class="underline" href="https://github.com/tony-montemuro/image2ascii" target="_blank">Click here</a> to view / contribute to the code!</p>
+            <p><strong>Fun Fact:</strong> The logo for this website was created by this website.</p>
           </div>
         </div>
       </div>
@@ -121,8 +124,9 @@
         <path d="M3 12h1m8 -9v1m8 8h1m-9 8v1m-6.4 -15.4l.7 .7m12.1 -.7l-.7 .7m0 11.4l.7 .7m-12.1 -.7l-.7 .7"/>
       </svg>
     </button>
-    <div class="flex justify-center flex-col gap-2 items-center">
-      <h1 class="text-center">Image2Ascii</h1>
+    <div class="flex justify-center flex-col gap-4 items-center">
+      <img src="../assets/logo.png" id="logo" alt="image2ascii Logo" class="w-64 h-auto" />
+      <img src="../assets/logo-dark.png" id="logo-dark" alt="image2ascii Dark Logo" class="w-64 h-auto sr-only" />
       <form id="form" class="flex flex-col gap-2 w-full md:w-fit" method="post">
         <input type="hidden" id="theme" name="theme" value="light" />
         <div class="flex flex-col lg:flex-row gap-2">
