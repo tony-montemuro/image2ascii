@@ -554,6 +554,40 @@ video {
   display: none;
 }
 
+.container {
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .container {
+    max-width: 640px;
+  }
+}
+
+@media (min-width: 768px) {
+  .container {
+    max-width: 768px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container {
+    max-width: 1024px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .container {
+    max-width: 1280px;
+  }
+}
+
+@media (min-width: 1536px) {
+  .container {
+    max-width: 1536px;
+  }
+}
+
 .sr-only {
   position: absolute;
   width: 1px;
@@ -586,6 +620,10 @@ video {
   position: relative;
 }
 
+.sticky {
+  position: sticky;
+}
+
 .inset-0 {
   inset: 0px;
 }
@@ -596,6 +634,10 @@ video {
 
 .top-0 {
   top: 0px;
+}
+
+.z-10 {
+  z-index: 10;
 }
 
 .block {
@@ -616,6 +658,14 @@ video {
 
 .table {
   display: table;
+}
+
+.grid {
+  display: grid;
+}
+
+.inline-grid {
+  display: inline-grid;
 }
 
 .hidden {
@@ -653,6 +703,10 @@ video {
 
 .h-full {
   height: 100%;
+}
+
+.max-h-\[75vh\] {
+  max-height: 75vh;
 }
 
 .min-h-\[42px\] {
@@ -704,8 +758,20 @@ video {
   width: 100%;
 }
 
+.min-w-96 {
+  min-width: 24rem;
+}
+
+.min-w-full {
+  min-width: 100%;
+}
+
 .max-w-screen-2xl {
   max-width: 1536px;
+}
+
+.max-w-full {
+  max-width: 100%;
 }
 
 .shrink-0 {
@@ -714,6 +780,10 @@ video {
 
 .border-collapse {
   border-collapse: collapse;
+}
+
+.transform {
+  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
 }
 
 @keyframes popin {
@@ -780,6 +850,18 @@ video {
           appearance: none;
 }
 
+.grid-cols-\[repeat\(auto-fit\2c minmax\(96px\2c 1fr\)\)\] {
+  grid-template-columns: repeat(auto-fit,minmax(96px,1fr));
+}
+
+.grid-cols-\[repeat\(auto-fill\2c minmax\(96px\2c 1fr\)\)\] {
+  grid-template-columns: repeat(auto-fill,minmax(96px,1fr));
+}
+
+.grid-cols-\[repeat\(auto-fill\2c minmax\(96px\2c max-content\)\)\] {
+  grid-template-columns: repeat(auto-fill,minmax(96px,max-content));
+}
+
 .flex-row {
   flex-direction: row;
 }
@@ -788,12 +870,24 @@ video {
   flex-direction: column;
 }
 
+.place-items-center {
+  place-items: center;
+}
+
 .items-center {
   align-items: center;
 }
 
+.justify-end {
+  justify-content: flex-end;
+}
+
 .justify-center {
   justify-content: center;
+}
+
+.justify-between {
+  justify-content: space-between;
 }
 
 .gap-1 {
@@ -810,6 +904,10 @@ video {
 
 .overflow-x-auto {
   overflow-x: auto;
+}
+
+.overflow-y-auto {
+  overflow-y: auto;
 }
 
 .text-ellipsis {
@@ -973,8 +1071,21 @@ video {
   padding-bottom: 0.75rem;
 }
 
+.px-2 {
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+
 .pl-4 {
   padding-left: 1rem;
+}
+
+.pl-8 {
+  padding-left: 2rem;
+}
+
+.pr-2 {
+  padding-right: 0.5rem;
 }
 
 .pr-4 {
@@ -985,20 +1096,20 @@ video {
   padding-top: 3rem;
 }
 
-.pt-4 {
-  padding-top: 1rem;
-}
-
-.pr-2 {
-  padding-right: 0.5rem;
-}
-
 .pt-2 {
   padding-top: 0.5rem;
 }
 
-.pl-8 {
-  padding-left: 2rem;
+.pt-4 {
+  padding-top: 1rem;
+}
+
+.pt-5 {
+  padding-top: 1.25rem;
+}
+
+.pl-2 {
+  padding-left: 0.5rem;
 }
 
 .text-center {
@@ -1035,11 +1146,6 @@ video {
 .text-xs {
   font-size: 0.75rem;
   line-height: 1rem;
-}
-
-.text-xl {
-  font-size: 1.25rem;
-  line-height: 1.75rem;
 }
 
 .text-red-500 {
@@ -1094,11 +1200,6 @@ video {
   #output td {
     padding: 0;
   }
-}
-
-.backdrop\:bg-black::backdrop {
-  --tw-bg-opacity: 1;
-  background-color: rgb(0 0 0 / var(--tw-bg-opacity, 1));
 }
 
 .backdrop\:bg-black\/50::backdrop {
@@ -1223,4 +1324,67 @@ video {
 
 .peer:checked ~ .dark\:peer-checked\:ring-offset-zinc-800\/80:is(.dark *) {
   --tw-ring-offset-color: rgb(39 39 42 / 0.8);
+}
+
+@media (min-width: 640px) {
+  .sm\:min-w-96 {
+    min-width: 24rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .md\:w-fit {
+    width: -moz-fit-content;
+    width: fit-content;
+  }
+
+  .md\:w-96 {
+    width: 24rem;
+  }
+
+  .md\:w-24 {
+    width: 6rem;
+  }
+
+  .md\:w-full {
+    width: 100%;
+  }
+
+  .md\:w-\[680px\] {
+    width: 680px;
+  }
+
+  .md\:max-w-screen-2xl {
+    max-width: 1536px;
+  }
+
+  .md\:flex-row {
+    flex-direction: row;
+  }
+
+  .md\:flex-col {
+    flex-direction: column;
+  }
+
+  .md\:justify-start {
+    justify-content: flex-start;
+  }
+
+  .md\:pl-4 {
+    padding-left: 1rem;
+  }
+
+  .md\:pl-8 {
+    padding-left: 2rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .lg\:w-96 {
+    width: 24rem;
+  }
+
+  .lg\:flex-row {
+    flex-direction: row;
+  }
 }

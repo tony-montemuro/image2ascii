@@ -541,6 +541,17 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     /**
+     * Handles when user scrolls output container
+     * 
+     * @param {Event} event 
+     */
+    function outputContainerScrollAction(event) {
+        const translation = `translateX(${event.target.scrollLeft}px)`;
+        copySuccess.style.transform = translation;
+        copyError.style.transform = translation;
+    }
+
+    /**
      * Handles when popout animation ends on output overlay.
      * 
      * @param {AnimationEvent} event Triggers on animationend.
@@ -635,6 +646,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Output events
     output.addEventListener('click', outputClickAction);
     outputContainer.addEventListener('keydown', event => ["Enter", " "].includes(event.key) ? output.click() : null);
+    outputContainer.addEventListener('scroll', outputContainerScrollAction);
     copySuccess.addEventListener('animationend', outputOverlayAnimationEndAction);
     copyError.addEventListener('animationend', outputOverlayAnimationEndAction);
 
