@@ -486,6 +486,7 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             await getOutput(form);
         } catch(error) {
+            console.log(error);
             addErrorMessage(error.message);
         } finally {
             setSubmitting(false);

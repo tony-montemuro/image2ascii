@@ -27,6 +27,7 @@ const (
 	STYLE_BRIGHTNESS    = "brightness"
 	STYLE_HIGH_CONTRAST = "contrast"
 	STYLE_EDGE_CONTRAST = "edge"
+	STYLE_SMOOTH        = "smooth"
 )
 
 // defaults
@@ -91,7 +92,7 @@ func getThemes() []string {
 }
 
 func getStyles() []string {
-	return []string{STYLE_NORMAL, STYLE_BRIGHTNESS, STYLE_HIGH_CONTRAST, STYLE_EDGE_CONTRAST}
+	return []string{STYLE_NORMAL, STYLE_BRIGHTNESS, STYLE_HIGH_CONTRAST, STYLE_EDGE_CONTRAST, STYLE_SMOOTH}
 }
 
 func getInvalidStylesError() error {
@@ -199,6 +200,21 @@ func getDither(style string) []DitherNode {
 			{value: 1.0 / 4.0, RelativePosition: RelativePosition{Dx: -1, Dy: 1}},
 			{value: 1.0 / 4.0, RelativePosition: RelativePosition{Dx: 0, Dy: 1}},
 		}
+	case STYLE_SMOOTH:
+		return []DitherNode{
+			{value: 7.0 / 48.0, RelativePosition: RelativePosition{Dx: 1, Dy: 0}},
+			{value: 5.0 / 48.0, RelativePosition: RelativePosition{Dx: 2, Dy: 0}},
+			{value: 3.0 / 48.0, RelativePosition: RelativePosition{Dx: -2, Dy: 1}},
+			{value: 5.0 / 48.0, RelativePosition: RelativePosition{Dx: -1, Dy: 1}},
+			{value: 7.0 / 48.0, RelativePosition: RelativePosition{Dx: 0, Dy: 1}},
+			{value: 5.0 / 48.0, RelativePosition: RelativePosition{Dx: 1, Dy: 1}},
+			{value: 3.0 / 48.0, RelativePosition: RelativePosition{Dx: 2, Dy: 1}},
+			{value: 1.0 / 48.0, RelativePosition: RelativePosition{Dx: -2, Dy: 2}},
+			{value: 3.0 / 48.0, RelativePosition: RelativePosition{Dx: -1, Dy: 2}},
+			{value: 5.0 / 48.0, RelativePosition: RelativePosition{Dx: 0, Dy: 2}},
+			{value: 3.0 / 48.0, RelativePosition: RelativePosition{Dx: 1, Dy: 2}},
+			{value: 1.0 / 48.0, RelativePosition: RelativePosition{Dx: 2, Dy: 2}},
+		}
 	}
 	return []DitherNode{}
 }
@@ -227,6 +243,12 @@ func getEncodingSettings(style string) (EncodingSettings, error) {
 		}
 		err = nil
 	case STYLE_EDGE_CONTRAST:
+		encodingSettings = EncodingSettings{
+			DitherNodes:            getDither(style),
+			UsePercievedBrightness: false,
+		}
+		err = nil
+	case STYLE_SMOOTH:
 		encodingSettings = EncodingSettings{
 			DitherNodes:            getDither(style),
 			UsePercievedBrightness: false,
@@ -471,6 +493,7 @@ func getAscii(c *gin.Context) {
 	encodingSettings, err := getEncodingSettings(*form.Style)
 	if err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
 
 	// attempt to generate ascii
