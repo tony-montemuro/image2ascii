@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>Image2Ascii</title>
+    <title>image2ascii</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="../static/styles.css"/>
     <script src="../static/script.js"></script>
@@ -128,7 +128,7 @@
       <img src="../assets/logo.png" id="logo" alt="image2ascii Logo" class="w-64 h-auto" />
       <img src="../assets/logo-dark.png" id="logo-dark" alt="image2ascii Dark Logo" class="w-64 h-auto sr-only" />
       <form id="form" class="flex flex-col gap-2 w-full md:w-fit" method="post">
-        <input type="hidden" id="theme" name="theme" value="light" />
+        <input type="hidden" id="theme" name="{{ .names.theme }}" value="light" />
         <div class="flex flex-col lg:flex-row gap-2">
 
           <!-- Image Upload -->
@@ -169,7 +169,7 @@
             <input 
               type="file"
               id="image"
-              name="image"
+              name="{{ .names.image }}"
               accept="image/png, image/jpg, image/jpeg"
               class="sr-only"
               tabindex="-1"
@@ -314,7 +314,7 @@
                       <input
                         type="number"
                         id="width"
-                        name="width"
+                        name="{{ .names.width }}"
                         min="1"
                         max="500"
                         step="1"
@@ -328,7 +328,7 @@
                       <input
                         type="number"
                         id="height"
-                        name="height"
+                        name="{{ .names.height }}"
                         min="1"
                         max="500"
                         step="1"
@@ -370,11 +370,11 @@
                 <div class="flex flex-row gap-2">
                   <input
                     type="range"
-                    id="exposure"
-                    class="cursor-pointer"
-                    name="exposure"
+                    id="exposure"                    
+                    name="{{ .names.exposure }}"
                     min="0"
                     max="100"
+                    class="cursor-pointer"
                   />
                   <input
                     type="number"
@@ -397,14 +397,12 @@
                 <div class="border-2 rounded border-gray-100 dark:border-gray-800 w-fit">
                   <select
                     id="style"
-                    name="style"
+                    name="{{ .names.style }}"
                     class="p-1 dark:bg-neutral-900 cursor-pointer rounded dark:border-gray-800"
                   >
-                    <option value="normal" selected>Normal</option>
-                    <option value="contrast">High Contrast</option>
-                    <option value="edge">Edge Contrast</option>
-                    <option value="smooth">Smooth</option>
-                    <option value="brightness">Brightness</option>
+                    {{ range .styleOptions }}
+                      <option value="{{ .Value }}">{{ .Label }}</option>
+                    {{ end }}
                   </select>
                 </div>
               </div>
@@ -418,7 +416,7 @@
                   <input
                     type="checkbox"
                     id="invert"
-                    name="invert"
+                    name="{{ .names.invert }}"
                     class="relative peer shrink-0 appearance-none w-5 h-5 bg-white dark:bg-neutral-900 checked:bg-black dark:checked:bg-white border border-gray-100 dark:border-gray-800 rounded cursor-pointer"
                   />
                   <svg class="absolute inset-0 w-5 h-5 hidden stroke-white dark:stroke-black peer-checked:block pointer-events-none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">

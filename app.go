@@ -52,6 +52,17 @@ const (
 	MAX_LENGTH   = 500
 )
 
+// form field names [ensure matches FormData struct]
+const (
+	FORM_THEME_NAME    = "theme"
+	FORM_WIDTH_NAME    = "width"
+	FORM_HEIGHT_NAME   = "height"
+	FORM_INVERT_NAME   = "invert"
+	FORM_EXPOSURE_NAME = "exposure"
+	FORM_STYLE_NAME    = "style"
+	FORM_IMAGE_NAME    = "image"
+)
+
 type CheckboxBool string
 
 func (cb CheckboxBool) Bool() bool {
@@ -85,6 +96,11 @@ type EncodingSettings struct {
 type Point struct {
 	X int
 	Y int
+}
+
+type Option struct {
+	Value string
+	Label string
 }
 
 func getThemes() []string {
@@ -466,7 +482,7 @@ func generateAscii(img image.Image, form FormData, encodingSettings EncodingSett
 
 func getAscii(c *gin.Context) {
 	// attempt to open image, and validate it
-	file, _, err := c.Request.FormFile("image")
+	file, _, err := c.Request.FormFile(FORM_IMAGE_NAME)
 	if err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "no image provided"})
 		return
@@ -506,7 +522,28 @@ func getAscii(c *gin.Context) {
 }
 
 func getWebClient(c *gin.Context) {
-	c.HTML(http.StatusOK, "index.html", nil)
+	styleOptions := []Option{
+		{Value: STYLE_NORMAL, Label: "Normal"},
+		{Value: STYLE_HIGH_CONTRAST, Label: "High Contrast"},
+		{Value: STYLE_EDGE_CONTRAST, Label: "Edge Contrast"},
+		{Value: STYLE_SMOOTH, Label: "Smooth"},
+		{Value: STYLE_BRIGHTNESS, Label: "Brightness"},
+	}
+
+	data := gin.H{
+		"styleOptions": styleOptions,
+		"names": gin.H{
+			"image":    FORM_IMAGE_NAME,
+			"theme":    FORM_THEME_NAME,
+			"width":    FORM_WIDTH_NAME,
+			"height":   FORM_HEIGHT_NAME,
+			"invert":   FORM_INVERT_NAME,
+			"exposure": FORM_EXPOSURE_NAME,
+			"style":    FORM_STYLE_NAME,
+		},
+	}
+
+	c.HTML(http.StatusOK, "index.html", data)
 }
 
 func main() {
