@@ -625,6 +625,11 @@ func main() {
 	router.Static("/static", "./static")
 	router.Static("/assets", "./assets")
 
+	// Favicons
+	router.StaticFile("/favicon.ico", "./assets/favicon.ico")
+	router.StaticFile("/icon.svg", "./assets/icon.svg")
+	router.StaticFile("/apple-touch-icon.png", "./assets/apple-touch-icon.png")
+
 	// web client
 	router.GET("/", getWebClient)
 

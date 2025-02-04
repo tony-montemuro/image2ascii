@@ -435,7 +435,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
 
-            disabledClasses = ['checked:bg-gray-600', 'dark:checked:bg-gray-200'];
+            disabledClasses = ['checked:bg-gray-500', 'opacity-40', 'dark:checked:bg-gray-400', 'dark:opacity-70'];
             enabledClasses = ['checked:bg-black', 'dark:checked:bg-white'];
 
             if (enabling) {

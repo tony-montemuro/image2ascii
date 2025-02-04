@@ -4,6 +4,9 @@
     <title>image2ascii</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="../static/styles.css"/>
+    <link rel="icon" href="/favicon.ico" sizes="32x32">
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <script src="../static/script.js"></script>
   </head>
   <body class="w-full pt-12 px-2 flex flex-col min-h-screen bg-white dark:bg-neutral-900 dark:text-neutral-100">
@@ -205,6 +208,7 @@
                       for="small" 
                       class="w-full px-4 py-2 bg-red-600 hover:bg-red-600/90 cursor-pointer rounded-full text-white peer-checked:ring-2 peer-checked:ring-blue-500 peer-checked:ring-offset-2 dark:peer-checked:ring-offset-zinc-800/80"
                       tabindex="0"
+                      title="Small"
                     >
                       <span class="inline-block align-middle text-center w-full">Small</span>
                     </label>
@@ -224,6 +228,7 @@
                       for="medium" 
                       class="w-full px-4 py-2 bg-yellow-600 hover:bg-yellow-600/90 cursor-pointer rounded-full text-white peer-checked:ring-2 peer-checked:ring-blue-500 peer-checked:ring-offset-2 dark:peer-checked:ring-offset-zinc-800/80"
                       tabindex="0"
+                      title="Medium"
                     >
                       <span class="inline-block align-middle text-center w-full">Medium</span>
                     </label>
@@ -242,6 +247,7 @@
                       for="large" 
                       class="w-full px-4 py-2 bg-green-600 hover:bg-green-600/90 cursor-pointer rounded-full text-white peer-checked:ring-2 peer-checked:ring-blue-500 peer-checked:ring-offset-2 dark:peer-checked:ring-offset-zinc-800/80"
                       tabindex="0"
+                      title="Large"
                     >
                       <span class="inline-block align-middle text-center w-full">Large</span>
                     </label>
@@ -262,6 +268,7 @@
                       for="twitch" 
                       class="w-full h-12 bg-twitch hover:bg-twitch/90 inline-flex items-center justify-center cursor-pointer rounded-full border-2 border-transparent peer-checked:ring-2 peer-checked:ring-blue-500 peer-checked:ring-offset-2 dark:peer-checked:ring-offset-zinc-800/80"
                       tabindex="0"
+                      title="Twitch"
                     >
                       <img src="../assets/twitch.png" alt="Twitch" class="w-8 h-auto" />
                     </label>
@@ -280,6 +287,7 @@
                       for="discord" 
                       class="w-full h-12 bg-discord hover:bg-discord/90 inline-flex items-center justify-center cursor-pointer rounded-full border-2 border-transparent peer-checked:ring-2 peer-checked:ring-blue-500 peer-checked:ring-offset-2 dark:peer-checked:ring-offset-zinc-800/80"
                       tabindex="0"
+                      title="Discord"
                     >
                       <img src="../assets/discord.png" alt="Discord" class="w-8 h-auto" />
                     </label>
@@ -298,6 +306,7 @@
                       for="custom"
                       class="w-full px-4 py-2 bg-gray-400 hover:bg-gray-400/90 cursor-pointer rounded-full text-white peer-checked:ring-2 peer-checked:ring-blue-500 peer-checked:ring-offset-2 dark:peer-checked:ring-offset-zinc-800/80"
                       tabindex="0"
+                      title="Custom"
                     >
                       <span class="inline-block align-middle text-center w-full">Custom</span>
                     </label>
@@ -321,6 +330,7 @@
                         class="bg-gray-100 dark:bg-gray-700 outline-none border-2 border-gray-100 dark:border-gray-800 rounded p-1 read-only:cursor-default"
                         readonly
                         tabindex="-1"
+                        title="Width"
                       />
                     </div>
                     <div class="flex gap-1 items-center">
@@ -335,6 +345,7 @@
                         class="bg-gray-100 dark:bg-gray-700 outline-none border-2 border-gray-100 dark:border-gray-800 rounded p-1 read-only:cursor-default"
                         readonly
                         tabindex="-1"
+                        title="Height"
                       />
                     </div>
                   </div>
@@ -344,9 +355,10 @@
                       <input 
                         type="checkbox"
                         id="aspect-ratio"
-                        class="relative peer shrink-0 appearance-none w-5 h-5 bg-white dark:bg-neutral-900 checked:bg-gray-600 dark:checked:bg-gray-200 border border-gray-100 dark:border-gray-800 rounded cursor-pointer disabled:cursor-default"
+                        class="relative peer shrink-0 appearance-none w-5 h-5 bg-white dark:bg-neutral-900 checked:bg-gray-600 opacity-40 dark:checked:bg-gray-400 dark:opacity-70 border border-gray-100 dark:border-gray-800 rounded cursor-pointer disabled:cursor-default"
                         disabled
                         checked
+                        title="Maintain Aspect Ratio"
                       />
                       <svg class="absolute inset-0 w-5 h-5 hidden stroke-white dark:stroke-black peer-checked:block pointer-events-none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="20 6 9 17 4 12"></polyline>
@@ -375,6 +387,7 @@
                     min="0"
                     max="100"
                     class="cursor-pointer"
+                    title="Exposure"
                   />
                   <input
                     type="number"
@@ -383,7 +396,7 @@
                     max="100"
                     step="1"
                     value="50"
-                    title="Exposure"
+                    title="Exposure Value"
                     class="outline-none border-2 border-gray-100 dark:border-gray-800 rounded p-1 dark:bg-neutral-900"
                   />
                 </div>
@@ -399,6 +412,7 @@
                     id="style"
                     name="{{ .names.style }}"
                     class="p-1 dark:bg-neutral-900 cursor-pointer rounded dark:border-gray-800"
+                    title="Style"
                   >
                     {{ range .styleOptions }}
                       <option value="{{ .Value }}">{{ .Label }}</option>
@@ -418,7 +432,8 @@
                     id="invert"
                     name="{{ .names.invert }}"
                     class="relative peer shrink-0 appearance-none w-5 h-5 bg-white dark:bg-neutral-900 checked:bg-black dark:checked:bg-white border border-gray-100 dark:border-gray-800 rounded cursor-pointer"
-                  />
+                    title="Invert"
+                    />
                   <svg class="absolute inset-0 w-5 h-5 hidden stroke-white dark:stroke-black peer-checked:block pointer-events-none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="20 6 9 17 4 12"></polyline>
                   </svg>
@@ -427,8 +442,9 @@
 
               <button
                 id="submit"
-                class="bg-blue-500 hover:bg-blue-500/90 text-white py-2 border rounded-lg flex items-center justify-center min-h-[42px]"
+                class="bg-blue-500 hover:bg-blue-500/90 text-white py-2 rounded-lg flex items-center justify-center min-h-[42px]"
                 type="submit"
+                title="Convert to ASCII"
               >
                 <span id="submit-btn-text">Convert to ASCII</span>
                 <svg id="submit-btn-spinner" class="size-5 animate-spin fill-white sr-only" viewBox="0 0 24 24">
