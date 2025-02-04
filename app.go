@@ -35,7 +35,8 @@ const (
 	DEFAULT_EXPOSURE = 50.0
 	DEFAULT_INVERTED = false
 	DEFAULT_STYLE    = STYLE_NORMAL
-	DEFAULT_WIDTH    = 50
+	DEFAULT_THEME    = THEME_LIGHT
+	DEFAULT_WIDTH    = 60
 )
 
 // ascii properties
@@ -63,12 +64,14 @@ const (
 	FORM_IMAGE_NAME    = "image"
 )
 
+// CheckboxBool struct for form checkboxes
 type CheckboxBool string
 
 func (cb CheckboxBool) Bool() bool {
 	return cb == "on"
 }
 
+// FormData struct to parse form body
 type FormData struct {
 	Theme    *string      `form:"theme"`
 	Width    *int         `form:"width"`
@@ -78,43 +81,56 @@ type FormData struct {
 	Style    *string      `form:"style"`
 }
 
+// Relative Position struct for DitherNode
 type RelativePosition struct {
 	Dx int
 	Dy int
 }
 
+// Dither node struct for dithering algorithms
 type DitherNode struct {
 	RelativePosition RelativePosition
 	value            float64
 }
 
+// Encoding settings struct to describe how to encode image based on style
 type EncodingSettings struct {
 	UsePercievedBrightness bool
 	DitherNodes            []DitherNode
 }
 
+// Point struct for representing position in image
 type Point struct {
 	X int
 	Y int
 }
 
+// Option struct to represent an option tag in HTML
 type Option struct {
 	Value string
 	Label string
 }
 
+// getThemes returns the valid web themes.
 func getThemes() []string {
 	return []string{THEME_LIGHT, THEME_DARK}
 }
 
+// getStyles returns the valid encoding styles.
 func getStyles() []string {
 	return []string{STYLE_NORMAL, STYLE_BRIGHTNESS, STYLE_HIGH_CONTRAST, STYLE_EDGE_CONTRAST, STYLE_SMOOTH}
 }
 
+// getInvalidStylesError returns an error that specifies to the user than the style is invalid
 func getInvalidStylesError() error {
 	return fmt.Errorf("invalid style: must be one of the following: %s", strings.Join(getStyles(), ", "))
 }
 
+// validateTheme ensures that the `theme` attribute of f is valid.
+// Returns error if validation fails, nil otherwise.
+// If theme is unset, update theme attribute to take on `defaultTheme`, return nil.
+// If theme is set, and validated, return nil.
+// If theme is set, but not validated, return error.
 func validateTheme(f *FormData) error {
 	if f.Theme != nil {
 		theme := *f.Theme
@@ -124,13 +140,18 @@ func validateTheme(f *FormData) error {
 			return fmt.Errorf("invalid theme: must be one of the following: %s", strings.Join(themes, ", "))
 		}
 	} else {
-		defaultTheme := THEME_LIGHT
+		defaultTheme := DEFAULT_THEME
 		f.Theme = &defaultTheme
 	}
 
 	return nil
 }
 
+// validateExposure ensures that the `exposure` attribute of f is valid.
+// Returns error if validation fails, nil otherwise.
+// If exposure is unset, update exposure attribute to take on default value, return nil.
+// If exposure is set, and validated, return nil.
+// If exposure is set, but not validated, return error.
 func validateExposure(f *FormData) error {
 	if f.Exposure != nil {
 		exposure := *f.Exposure
@@ -149,6 +170,11 @@ func validateExposure(f *FormData) error {
 	return nil
 }
 
+// validateWidthAndHeight ensures that the `width` and `height` attributes of f are valid.
+// Returns error if validation fails, nil otherwise.
+// If width / height is unset, update width / height attribute to take on default value, return nil.
+// If width / height is set, and both are validated, return nil.
+// If width / height is set, but one or both is not validated, return error.
 func validateWidthAndHeight(f *FormData, bounds image.Rectangle) error {
 	widthErrMsg := fmt.Sprintf("invalid width: must be a number between %d and %d", MIN_LENGTH, MAX_LENGTH)
 	heightErrMsg := fmt.Sprintf("invalid height: must be a number between %d and %d", MIN_LENGTH, MAX_LENGTH)
@@ -178,6 +204,11 @@ func validateWidthAndHeight(f *FormData, bounds image.Rectangle) error {
 	return err
 }
 
+// validateStyle ensures that the `style` attribute of f is valid.
+// Returns error if validation fails, nil otherwise.
+// If style is unset, update style attribute to take on default value, return nil.
+// If style is set, and validated, return nil.
+// If style is set, but not validated, return error.
 func validateStyle(f *FormData) error {
 	if f.Style != nil {
 		style := *f.Style
@@ -192,16 +223,21 @@ func validateStyle(f *FormData) error {
 	return nil
 }
 
+// getDither returns the slice of DitherNodes associated with an encoding style.
+// Generally, returns an non-empty slice of DitherNodes.
+// However, if style does not use dithering, returns an empty slice of DitherNodes.
 func getDither(style string) []DitherNode {
 	switch style {
 	case STYLE_NORMAL:
 		return []DitherNode{
+			// Floyd-Steinberg [https://en.wikipedia.org/wiki/Floyd%E2%80%93Steinberg_dithering]
 			{value: 7.0 / 16.0, RelativePosition: RelativePosition{Dx: 1, Dy: 0}},
 			{value: 3.0 / 16.0, RelativePosition: RelativePosition{Dx: -1, Dy: 1}},
 			{value: 5.0 / 16.0, RelativePosition: RelativePosition{Dx: 0, Dy: 1}},
 			{value: 1.0 / 16.0, RelativePosition: RelativePosition{Dx: 1, Dy: 1}},
 		}
 	case STYLE_HIGH_CONTRAST:
+		// Atkinson [https://en.wikipedia.org/wiki/Atkinson_dithering]
 		return []DitherNode{
 			{value: 1.0 / 8.0, RelativePosition: RelativePosition{Dx: 1, Dy: 0}},
 			{value: 1.0 / 8.0, RelativePosition: RelativePosition{Dx: 2, Dy: 0}},
@@ -211,12 +247,14 @@ func getDither(style string) []DitherNode {
 			{value: 1.0 / 8.0, RelativePosition: RelativePosition{Dx: 0, Dy: 2}},
 		}
 	case STYLE_EDGE_CONTRAST:
+		// Sierra Lite [https://tannerhelland.com/2012/12/28/dithering-eleven-algorithms-source-code.html#sierra-dithering]
 		return []DitherNode{
 			{value: 2.0 / 4.0, RelativePosition: RelativePosition{Dx: 1, Dy: 0}},
 			{value: 1.0 / 4.0, RelativePosition: RelativePosition{Dx: -1, Dy: 1}},
 			{value: 1.0 / 4.0, RelativePosition: RelativePosition{Dx: 0, Dy: 1}},
 		}
 	case STYLE_SMOOTH:
+		// Minimized Average Error [https://en.wikipedia.org/wiki/Error_diffusion#minimized_average_error]
 		return []DitherNode{
 			{value: 7.0 / 48.0, RelativePosition: RelativePosition{Dx: 1, Dy: 0}},
 			{value: 5.0 / 48.0, RelativePosition: RelativePosition{Dx: 2, Dy: 0}},
@@ -235,9 +273,13 @@ func getDither(style string) []DitherNode {
 	return []DitherNode{}
 }
 
+// getEncodingSettings returns the encoding settings associated with an encoding style.
+// Generally this function returns EncodingSettings struct with a `nil` error.
+// If style has no encoding setting, we define error in our return.
 func getEncodingSettings(style string) (EncodingSettings, error) {
 	var encodingSettings EncodingSettings
-	err := getInvalidStylesError()
+	var err error
+	isValidStyle := true
 
 	switch style {
 	case STYLE_NORMAL:
@@ -245,36 +287,39 @@ func getEncodingSettings(style string) (EncodingSettings, error) {
 			DitherNodes:            getDither(style),
 			UsePercievedBrightness: false,
 		}
-		err = nil
 	case STYLE_HIGH_CONTRAST:
 		encodingSettings = EncodingSettings{
 			DitherNodes:            getDither(style),
 			UsePercievedBrightness: false,
 		}
-		err = nil
 	case STYLE_BRIGHTNESS:
 		encodingSettings = EncodingSettings{
 			DitherNodes:            getDither(style),
 			UsePercievedBrightness: true,
 		}
-		err = nil
 	case STYLE_EDGE_CONTRAST:
 		encodingSettings = EncodingSettings{
 			DitherNodes:            getDither(style),
 			UsePercievedBrightness: false,
 		}
-		err = nil
 	case STYLE_SMOOTH:
 		encodingSettings = EncodingSettings{
 			DitherNodes:            getDither(style),
 			UsePercievedBrightness: false,
 		}
-		err = nil
+	default:
+		isValidStyle = false
+	}
+
+	if !isValidStyle {
+		err = getInvalidStylesError()
 	}
 
 	return encodingSettings, err
 }
 
+// getLinearizedChannel takes a standard, 8-bit color channel, and converts it to a linearized value between 0.0 and 1.0.
+// For more information, see: https://en.wikipedia.org/wiki/SRGB#Transfer_function_(%22gamma%22)
 func getLinearizedChannel(colorChannel uint8) float64 {
 	v := float64(colorChannel) / 255.0
 
@@ -285,15 +330,22 @@ func getLinearizedChannel(colorChannel uint8) float64 {
 	}
 }
 
+// getLuminance takes lineralized r, g, and b values, and determines a pixels luminance, a value between 0.0 and 1.0, where
+// 0 represents most dark, and 1.0 represents most bright.
+// For more information, see: https://en.wikipedia.org/wiki/Relative_luminance#Relative_luminance_and_%22gamma_encoded%22_colorspaces
 func getLuminance(r float64, g float64, b float64) float64 {
 	return (0.2126 * r) + (0.7152 * g) + (0.0722 * b)
 }
 
+// getColor takes a full 32-bit color channel, and an opacity value between 0.0 and 1.0, and converts the color to the 8-bit
+// representation with opaicty "applied" such that the full color can be represented as RGB without A.
 func getColor(channel uint32, opacity float64) uint8 {
 	color := uint8(channel >> 8)
 	return uint8(math.Round(255.0 - opacity*float64(255-color)))
 }
 
+// getPixelLuminance takes a pixel, and returns it's luminance.
+// At a high level, this converts a full-color pixel to a black-and-white value, represented as a number between 0.0 and 1.0.
 func getPixelLuminance(pixel color.Color) float64 {
 	r, g, b, a := pixel.RGBA()
 
@@ -303,13 +355,12 @@ func getPixelLuminance(pixel color.Color) float64 {
 	green := getColor(g, opacity)
 	blue := getColor(b, opacity)
 
-	// linearize red, green, blue
 	lr, lg, lb := getLinearizedChannel(red), getLinearizedChannel(green), getLinearizedChannel(blue)
 
-	// calculate luminance
 	return getLuminance(lr, lg, lb)
 }
 
+// clampLuminance takes a luminance value, and forces it to be a float between 0.0 and 1.0.
 func clampLuminance(luminance float64) float64 {
 	if luminance < 0 {
 		return 0
@@ -320,6 +371,8 @@ func clampLuminance(luminance float64) float64 {
 	return luminance
 }
 
+// getPercievedLuminance takes a luminance value, and returns it's percieved brightness.
+// For more information, see: https://en.wikipedia.org/wiki/Lightness#1976
 func getPercievedBrightness(l float64) float64 {
 	luminance := clampLuminance(l)
 	if luminance <= 0.008856 {
@@ -329,6 +382,10 @@ func getPercievedBrightness(l float64) float64 {
 	}
 }
 
+// getPixelNumber maps a relative pixel coordinate to it's bit position of a brail ASCII, a number between 0 and 7.
+// x must be an int between 0 and 1.
+// y must be an int between 0 and 3.
+// ⣿ <- for a better understanding. You can see a brail character is 4x2 pixels.
 func getPixelNumber(x int, y int) int {
 	if y <= 2 {
 		return 3*x + y
@@ -336,6 +393,8 @@ func getPixelNumber(x int, y int) int {
 	return 2*y + x
 }
 
+// getFormData takes a gin context, and returns the request body based on the FormData struct.
+// Returns an error if request body is malformed.
 func getFormData(c *gin.Context) (FormData, error) {
 	var form FormData
 
@@ -346,6 +405,9 @@ func getFormData(c *gin.Context) (FormData, error) {
 	return form, nil
 }
 
+// validateFormData validates each form field that requires it.
+// If all validation tests pass, then this function will simply return nil.
+// If at least one validation test fails, then return an error with more details.
 func validateFormData(form *FormData, bounds image.Rectangle) error {
 	if err := validateTheme(form); err != nil {
 		return err
@@ -366,6 +428,10 @@ func validateFormData(form *FormData, bounds image.Rectangle) error {
 	return nil
 }
 
+// getGrayscaleMatrix takes an image, and returns it in a grayscaled matrix format, with dimensions `totalHeight` x `totalWidth`.
+// Each element in the matrix represents a pixel, converted to grayscale (luminance).
+// Note that grayscale[y][x] does not correspond to image.At(x, y), since the width and height of the image may not correspond
+// to `totalWidth` & `totalHeight`.
 func getGrayscaleMatrix(img image.Image, totalWidth, totalHeight int) [][]float64 {
 	bounds := img.Bounds()
 	imageWidth, imageHeight := bounds.Max.X-bounds.Min.X, bounds.Max.Y-bounds.Min.Y
@@ -388,7 +454,9 @@ func getGrayscaleMatrix(img image.Image, totalWidth, totalHeight int) [][]float6
 	return grayscale
 }
 
-func ditherMatrix(dither []DitherNode, grayscaleMatrix [][]float64, point Point, quantError float64) {
+// diffuseError performs the error diffusion operation of a dithering algorithm.
+// For more information, see: [https://en.wikipedia.org/wiki/Error_diffusion]
+func diffuseError(dither []DitherNode, grayscaleMatrix [][]float64, point Point, quantError float64) {
 	compare := func(n, dn, length int) bool {
 		if dn < n {
 			return dn > 0
@@ -405,6 +473,10 @@ func ditherMatrix(dither []DitherNode, grayscaleMatrix [][]float64, point Point,
 	}
 }
 
+// getMaxExposure determines the maximum exposure we should use as a threshold, which is dependent on `usePercievedBrightness`.
+// Generally, we want our exposure to be a number between 0.0 and 1.0. Since user provides a number between 0 and 100, we need
+// to divide by 100.
+// However, if we are using percieved brightness as our threshold, then we can keep it as a number between 0 and 100.
 func getMaxExposure(exposure float64, usePercievedBrightness bool) float64 {
 	if usePercievedBrightness {
 		return exposure
@@ -412,6 +484,9 @@ func getMaxExposure(exposure float64, usePercievedBrightness bool) float64 {
 	return exposure / 100.0
 }
 
+// pixelsToAscii converts a set of 8 pixels, starting at `point` and forming a brail shape (⣿), into an ASCII character,
+// by analysing each pixel invididually, based on the exposure of each pixel.
+// This function will diffuse the error generated by each pixel on every iteration.
 func pixelsToAscii(point Point, form FormData, grayscaleMatrix [][]float64, encodingSettings EncodingSettings) rune {
 	var offset uint8 = 0
 	transformedX, transformedY := point.X*CHAR_WIDTH, point.Y*CHAR_HEIGHT
@@ -432,21 +507,27 @@ func pixelsToAscii(point Point, form FormData, grayscaleMatrix [][]float64, enco
 				quantError -= 1.0
 			}
 
-			ditherMatrix(encodingSettings.DitherNodes, grayscaleMatrix, Point{X: x, Y: y}, quantError)
+			diffuseError(encodingSettings.DitherNodes, grayscaleMatrix, Point{X: x, Y: y}, quantError)
 		}
 	}
 
 	return rune(0x2800 + int(offset))
 }
 
+// isInvertNeeded determines if we need to invert the ascii matrix before returning the result.
+// Depends on `isInverted` and `theme`, both being defined in the request body.
+// General logic: IF isInverted XOR theme => Invert NOT NEEDED; ELSE => Invert NEEDED
 func isInvertNeeded(isInverted bool, theme string) bool {
 	return isInverted == (theme == THEME_LIGHT)
 }
 
+// invertBrail takes a brail rune, and "inverts" it, by flipping the bits that control the brail (final byte) with XOR.
 func invertBrail(r rune) rune {
 	return r ^ 0xFF
 }
 
+// invertAscii loops over the entire ascii, and inverts each brail element.
+// Note that this function generates a copy of the original ascii slice.
 func invertAscii(ascii []string) []string {
 	invertedAscii := make([]string, len(ascii))
 
@@ -461,7 +542,8 @@ func invertAscii(ascii []string) []string {
 	return invertedAscii
 }
 
-func generateAscii(img image.Image, form FormData, encodingSettings EncodingSettings) ([]string, int, error) {
+// generateAscii takes our input image, as well as configuration settings, and generates an ASCII representation of the image
+func generateAscii(img image.Image, form FormData, encodingSettings EncodingSettings) []string {
 	ascii := []string{}
 	grayscaleMatrix := getGrayscaleMatrix(img, CHAR_WIDTH**form.Width, CHAR_HEIGHT**form.Height)
 
@@ -477,9 +559,13 @@ func generateAscii(img image.Image, form FormData, encodingSettings EncodingSett
 		ascii = invertAscii(ascii)
 	}
 
-	return ascii, http.StatusOK, nil
+	return ascii
 }
 
+// getAscii is the function executed when a user does a POST request to "/".
+// This function parses the request body, and if validated, will generate an ASCII representation of their image.
+// In the event of a success, the server will return a simple JSON object containing an ASCII matrix.
+// In the event of a failure, the server will return an error JSON object to the client.
 func getAscii(c *gin.Context) {
 	// attempt to open image, and validate it
 	file, _, err := c.Request.FormFile(FORM_IMAGE_NAME)
@@ -513,14 +599,12 @@ func getAscii(c *gin.Context) {
 	}
 
 	// attempt to generate ascii
-	ascii, code, err := generateAscii(image, form, encodingSettings)
-	if code != http.StatusOK || err != nil {
-		c.IndentedJSON(code, gin.H{"error": err.Error()})
-	} else {
-		c.IndentedJSON(http.StatusOK, ascii)
-	}
+	ascii := generateAscii(image, form, encodingSettings)
+	c.IndentedJSON(http.StatusOK, ascii)
 }
 
+// getWebClient is the function executed when a user does a GET request to "/".
+// This simply returns a templated HTML file.
 func getWebClient(c *gin.Context) {
 	styleOptions := []Option{
 		{Value: STYLE_NORMAL, Label: "Normal"},
@@ -546,6 +630,7 @@ func getWebClient(c *gin.Context) {
 	c.HTML(http.StatusOK, "index.html", data)
 }
 
+// main establishes our server, and listens for GET and POST requests.
 func main() {
 	router := gin.Default()
 	router.LoadHTMLGlob("templates/*")
