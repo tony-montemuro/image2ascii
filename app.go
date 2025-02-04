@@ -360,21 +360,9 @@ func getPixelLuminance(pixel color.Color) float64 {
 	return getLuminance(lr, lg, lb)
 }
 
-// clampLuminance takes a luminance value, and forces it to be a float between 0.0 and 1.0.
-func clampLuminance(luminance float64) float64 {
-	if luminance < 0 {
-		return 0
-	}
-	if luminance > 1 {
-		return 1
-	}
-	return luminance
-}
-
 // getPercievedLuminance takes a luminance value, and returns it's percieved brightness.
 // For more information, see: https://en.wikipedia.org/wiki/Lightness#1976
-func getPercievedBrightness(l float64) float64 {
-	luminance := clampLuminance(l)
+func getPercievedBrightness(luminance float64) float64 {
 	if luminance <= 0.008856 {
 		return luminance * 903.3
 	} else {
