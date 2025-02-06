@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const infoPopup = this.getElementById('info-popup');
     const infoCloseBtn = this.getElementById('info-popup-close');
     const form = this.getElementById('form');
+    const logoWrapper = this.getElementById('logo-wrapper');
     const logo = this.getElementById('logo');
     const darkLogo = this.getElementById('logo-dark');
     const themeInput = this.getElementById('theme');
@@ -46,6 +47,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const THEME = "theme";
     const LIGHT_THEME = "light";
     const DARK_THEME = "dark";
+    const FLOAT_IN_ANIMATION = 'animate-floatin';
     const size = {
         twitch: {
             width: 30,
@@ -143,6 +145,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         imageInput.value = '';
         hide(imageOptions);
+        imageOptions.classList.remove(FLOAT_IN_ANIMATION);
         defaultSizeRadio.checked = true;
 
         if (message) {
@@ -218,6 +221,7 @@ document.addEventListener('DOMContentLoaded', function() {
         show(imageOptions);
         hide(error);
         error.textContent = '';
+        imageOptions.classList.add(FLOAT_IN_ANIMATION);
 
         const type = getCurrentType();
         let width, height, maxHeight;
@@ -343,6 +347,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         show(outputContainer);
         outputContainer.tabIndex = "0";
+        outputContainer.classList.add(FLOAT_IN_ANIMATION);
     }
 
     /* ===== ACTIONS ===== */
@@ -374,7 +379,13 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function infoBtnClickAction() {
-        infoPopup.show();
+        infoPopup.showModal();
+        infoPopup.classList.add(FLOAT_IN_ANIMATION);
+    }
+
+    function infoCloseBtnClickAction() {
+        infoPopup.close();
+        infoPopup.classList.remove(FLOAT_IN_ANIMATION);
     }
 
     /**
@@ -618,8 +629,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // High-level button events
     displayBtn.addEventListener('click', displayBtnClickAction);
-    infoBtn.addEventListener('click', () => infoPopup.showModal());
-    infoCloseBtn.addEventListener('click', () => infoPopup.close());
+    infoBtn.addEventListener('click', infoBtnClickAction);
+    infoCloseBtn.addEventListener('click', infoCloseBtnClickAction);
 
     // Upload input events
     uploadBtn.addEventListener('keydown', event => event.key === "Enter" ? imageInput.click() : null);
