@@ -348,6 +348,9 @@ document.addEventListener('DOMContentLoaded', function() {
         show(outputContainer);
         outputContainer.tabIndex = "0";
         outputContainer.classList.add(FLOAT_IN_ANIMATION);
+        setTimeout(() => {
+            outputContainer.classList.remove(FLOAT_IN_ANIMATION);
+        }, 500);
     }
 
     /* ===== ACTIONS ===== */
