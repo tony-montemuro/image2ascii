@@ -5,7 +5,7 @@
 ⠀⠛⠛⠀⠛⠛⠃⠘⠛⠛⠀⠘⠛⠃⠘⠻⠛⠙⠛⠃⠀⠙⠻⠛⣹⣿⡇⠀⠙⠛⠿⠛⠃⠀⠛⠛⠛⠛⠛⠀⠘⠻⠛⠙⠛⠃⠘⠛⠟⠛⠁⠀⠈⠛⠿⠛⠃⠘⠛⠃⠘⠛⠛
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢿⣶⣾⠿⠟⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 
-# [image2ascii](https://image2ascii.com/)
+# [image2ascii](https://image2ascii.net/)
 
 Convert your PNG and JPEG images into customizable ASCII art. Create perfect ASCII for Twitch and Discord with preset sizes, dithering styles, and more.
 

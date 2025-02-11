@@ -316,7 +316,7 @@ document.addEventListener('DOMContentLoaded', function() {
      * @param {HTMLFormElement} form Form element with user selections.
      */
     async function getOutput(form) {
-        const action = form.action;
+        const action = form.action + "api";
         const method = form.method;
         const formData = new FormData(form);
         formData.delete('size');

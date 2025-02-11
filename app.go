@@ -635,7 +635,7 @@ func main() {
 	router.GET("/", getWebClient)
 
 	// api
-	router.POST("/", getAscii)
+	router.POST("/api", getAscii)
 
 	router.Run("localhost:8080")
 }
