@@ -273,7 +273,15 @@ document.addEventListener('DOMContentLoaded', function() {
         const img = files[0];
         const validTypes = ['image/jpeg', 'image/png'];
 
-        if (validTypes.includes(img.type)) {
+        try {
+            if (!validTypes.includes(img.type)) {
+                throw new Error("File type not supported. Please upload a JPEG or PNG file.");
+            }
+
+            if (img.size > 10000000) {
+                throw new Error("File size too large. Please upload a file smaller than 10 MB.");
+            }
+
             image = new Image();
             image.src = URL.createObjectURL(img);
             image.onload = function() {
@@ -281,8 +289,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 Object.keys(size).forEach(type => size[type].height = getCalculatedHeight(size[type].width));
                 displayOptions(this);
             }
-        } else {
-            hideOptions('File type not supported. Please upload a JPEG or PNG file.');
+        } catch (error) {
+            hideOptions(error.message);
         }
     };
 
