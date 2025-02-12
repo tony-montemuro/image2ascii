@@ -335,7 +335,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         let data = await response.json();
 
-        if (response.status !== 200 || data.error === "true") {
+        if (response.status !== 200 || "error" in data) {
             throw new Error(data.error);
         }
 
