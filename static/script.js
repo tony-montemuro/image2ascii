@@ -335,11 +335,11 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         let data = await response.json();
 
-        output.textContent = '';
-        if (response.status !== 200) {
+        if (response.status !== 200 || data.error === "true") {
             throw new Error(data.error);
         }
 
+        output.textContent = '';
         removeErrorMessage();
 
         output.replaceChildren();
