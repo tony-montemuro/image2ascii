@@ -2,6 +2,9 @@
 LOG_FILE="/var/log/image2ascii/deploy.log"
 
 {
+    echo
+    echo '=================================================='
+    echo
     echo 'Starting application_start.sh: '
     echo 'Starting image2ascii service: '
     systemctl start image2ascii

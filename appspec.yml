@@ -5,8 +5,8 @@ files:
     destination: /home/ubuntu/image2ascii
 hooks:
 # Install
-  ApplicationStop:
-    - location: scripts/application_stop.sh
+  BeforeInstall:
+    - location: scripts/before_install.sh
       timeout: 300
       runas: root
   AfterInstall:
