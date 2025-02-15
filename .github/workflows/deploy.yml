@@ -19,11 +19,11 @@ jobs:
 
       # Step 2 - Configure AWS credentials
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1.7.0
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.AWS_IAM_GITHUB_ACTION_ARN }}
-          role-session-name: GitHub_to_AWS_via_FederatedOIDC
           aws-region: ${{ secrets.AWS_REGION }}
+          role-to-assume: ${{ secrets.AWS_IAM_GITHUB_ACTION_ARN }}
+          role-session-name: image2ascii-ProductionDeploy
 
       # Step 3: Run code deployment
       - name: Create CodeDeploy deployment
