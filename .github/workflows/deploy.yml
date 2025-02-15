@@ -26,7 +26,7 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
 
       # Step 3: Run code deployment
-      - name: Create CodeDeploy Deployment
+      - name: Create CodeDeploy deployment
         run: |
           aws deploy create-deployment \
             --application-name ${{ secrets.AWS_CODEDEPLOY_APPLICATION_NAME }} \
