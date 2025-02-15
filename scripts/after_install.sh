@@ -24,7 +24,7 @@ LOG_FILE="/var/log/image2ascii/deploy.log"
     echo 'Rebuilding output.css file...'
     npx tailwindcss -i ./static/input.css -o ./static/styles.css
     echo 'Recompiling go binary...'
-    go build
+    go build -buildvcs=false
 
     echo 'after_install.sh completed successfully'
 
