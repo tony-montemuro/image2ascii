@@ -1,0 +1,17 @@
+[Unit]
+Description=Image2Ascii Application
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/image2ascii
+ExecStart=/home/ubuntu/image2ascii/image2ascii
+Restart=always
+RestartSec=5
+StandardOutput=append:/var/log/image2ascii/system.log
+StandardError=append:/var/log/image2ascii/error.log
+SyslogIdentifier=%n
+
+[Install]
+WantedBy=multi-user.target
